@@ -7,6 +7,7 @@ class AbstractUser(DjangoAbstractUser):
     """
     基本用户表
     """
+
     # 默认字段 - 基本信息
     username = models.CharField(
         "用户名",

@@ -80,6 +80,8 @@ class ResponseType(ResponseTypeEnum):
     DatabaseError = ("C0300", "数据库服务出错", 500)
     CacheError = ("C0400", "缓存服务出错", 500)
     NotificationError = ("C0500", "通知服务出错", 500)
+
+
 # endregion
 
 

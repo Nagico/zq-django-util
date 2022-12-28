@@ -100,10 +100,7 @@ class ActiveUserAuthentication(JWTAuthentication):
         检查是否激活
         """
         if not user.is_active:
-            raise ApiException(
-                ResponseType.NotActive,
-                "您的账号未激活，请完善个人信息后重试"
-            )
+            raise ApiException(ResponseType.NotActive, "您的账号未激活，请完善个人信息后重试")
 
 
 class NormalUserAuthentication(ActiveUserAuthentication):

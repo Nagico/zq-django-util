@@ -31,9 +31,9 @@ def get_iso_8601(expire: float) -> str:
 
 
 def get_token(
-        key: str,
-        callback: Optional[dict[str, str]],
-        policy: Optional[dict[str, Any]] = None,
+    key: str,
+    callback: Optional[dict[str, str]],
+    policy: Optional[dict[str, Any]] = None,
 ) -> OSSCallbackToken:
     """
     获取直传签名token

@@ -46,9 +46,7 @@ def get_openid(code: str) -> dict:
         return wechat_client.wxa.code_to_session(code)
     except WeChatClientException as e:
         if e.errcode == 40029:
-            raise ApiException(
-                ResponseType.ThirdLoginExpired, "微信登录失败，请重新登录"
-            )
+            raise ApiException(ResponseType.ThirdLoginExpired, "微信登录失败，请重新登录")
         raise ApiException(
             ResponseType.ThirdLoginFailed,
             f"微信登录失败 [{e.errcode}] {e.errmsg}",
@@ -67,13 +65,11 @@ def get_user_phone_num(code: str) -> str:
 
         if result["phone_info"]["countryCode"] != "86":
             raise ApiException(
-                ResponseType.ParamValidationFailed,
-                f"仅支持中国大陆手机号"
+                ResponseType.ParamValidationFailed, f"仅支持中国大陆手机号"
             )
 
         return result["phone_info"]["purePhoneNumber"]
     except WeChatClientException as e:
         raise ApiException(
-            ResponseType.ThirdLoginFailed,
-            f"[{e.errcode}] {e.errmsg}"
+            ResponseType.ThirdLoginFailed, f"[{e.errcode}] {e.errmsg}"
         )

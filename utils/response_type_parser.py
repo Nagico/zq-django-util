@@ -2,11 +2,11 @@
 将错误码表格中 code、详情、备注、状态码、ResponseType 五列
 (无需拷贝 00000 的三行)拷贝至 error.ini 文件中，运行该程序更新 ResponseType
 """
-program_path = '../zq_django_util/response/__init__.py'
+program_path = "../zq_django_util/response/__init__.py"
 
 
 def prepare_context() -> (str, str):
-    with open(program_path, 'r', encoding='utf-8') as f:
+    with open(program_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     above = []
@@ -18,29 +18,29 @@ def prepare_context() -> (str, str):
         if not above_finished:
             above.append(line)
 
-        if not above_finished and line == '# region ResponseType\n':
+        if not above_finished and line == "# region ResponseType\n":
             above_finished = True
-        if above_finished and line == '# endregion\n':
+        if above_finished and line == "# endregion\n":
             below_started = True
 
         if below_started:
             below.append(line)
 
-    return ''.join(above), ''.join(below)
+    return "".join(above), "".join(below)
 
 
 def write_file(above: str, content: list[str], below: str) -> None:
     lines = [
-        '@unique',
-        'class ResponseType(ResponseTypeEnum):',
+        "@unique",
+        "class ResponseType(ResponseTypeEnum):",
         '    """API状态类型"""',
-        ''
+        "",
     ]
-    lines += [f'    {line}' for line in content]
+    lines += [f"    {line}" for line in content]
 
-    with open(program_path, 'w', encoding='utf-8') as f:
+    with open(program_path, "w", encoding="utf-8") as f:
         f.write(above)
-        f.write('\n'.join(lines) + '\n')
+        f.write("\n".join(lines) + "\n")
         f.write(below)
 
 

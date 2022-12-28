@@ -13,8 +13,8 @@ from rest_framework.response import Response
 from rest_framework.views import set_rollback
 from sentry_sdk import capture_exception, set_tag, set_user
 
-from zq_django_util.response import ResponseType
 from zq_django_util.exceptions import ApiException
+from zq_django_util.response import ResponseType
 
 
 class ApiExceptionHandler:
@@ -200,7 +200,7 @@ def exception_handler(
     """
     handler_class = settings.REST_FRAMEWORK.get(
         "EXCEPTION_HANDLER_CLASS",
-        "zq_django_util.exceptions.handler.ApiExceptionHandler"
+        "zq_django_util.exceptions.handler.ApiExceptionHandler",
     )
 
     try:
@@ -213,10 +213,10 @@ def exception_handler(
             module_class = globals()[class_name]
 
         if not issubclass(module_class, ApiExceptionHandler):
-            raise ImportError(f"{handler_class} is not a subclass of ApiExceptionHandler")
+            raise ImportError(
+                f"{handler_class} is not a subclass of ApiExceptionHandler"
+            )
 
         return module_class(exc, context).run()
     except Exception:
-        raise ValueError(
-            f"{handler_class} isn't a ApiExceptionHandler module"
-        )
+        raise ValueError(f"{handler_class} isn't a ApiExceptionHandler module")

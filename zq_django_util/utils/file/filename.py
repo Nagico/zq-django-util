@@ -39,4 +39,3 @@ def get_random_name(file_name: str) -> str:
     )
 
     return new_name
-

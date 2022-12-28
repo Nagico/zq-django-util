@@ -6,10 +6,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from zq_django_util.exceptions import ApiException
 from zq_django_util.response import ResponseType
-
 from zq_django_util.utils.auth.serializers import (
-    PasswordLoginSerializer,
     OpenIDLoginSerializer,
+    PasswordLoginSerializer,
     WechatLoginSerializer,
 )
 
@@ -33,10 +32,7 @@ class OpenIDLoginView(TokenObtainPairView):
         try:
             serializer.is_valid(raise_exception=True)
         except TokenError:
-            raise ApiException(
-                ResponseType.ThirdLoginFailed,
-                "微信登录失败，请稍后重试"
-            )
+            raise ApiException(ResponseType.ThirdLoginFailed, "微信登录失败，请稍后重试")
 
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
@@ -54,4 +50,5 @@ class PasswordLoginView(TokenObtainPairView):
     """
     密码登录视图
     """
+
     serializer_class = PasswordLoginSerializer

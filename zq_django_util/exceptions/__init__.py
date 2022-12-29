@@ -18,18 +18,18 @@ class ApiException(Exception):
     """API异常"""
 
     record: bool
-    response_type: ResponseType
+    response_type: "ResponseType"
     eid: Optional[str]
     detail: str
     msg: str
     event_id: Optional[str]
     inner: Optional[Exception]
-    exc_data: Optional[ExceptionInfo]
+    exc_data: Optional["ExceptionInfo"]
     time: datetime
 
     def __init__(
         self,
-        type: ResponseType,
+        type: "ResponseType",
         msg: Optional[str] = None,
         inner: Optional[Exception] = None,
         record: bool = False,
@@ -44,7 +44,7 @@ class ApiException(Exception):
         :param detail: 异常详情(面向开发者)
         """
         self.record = record or type.get_status_code() == 500  # 是否记录异常(500强制记录)
-        self.response_type: ResponseType = type
+        self.response_type: "ResponseType" = type
         if self.record:  # 记录异常
             self.eid = self.get_exp_id()  # 异常id
         else:
@@ -85,7 +85,7 @@ class ApiException(Exception):
         return res
 
     @property
-    def response_data(self) -> ResponseData:
+    def response_data(self) -> "ResponseData":
         """
         获取响应数据
         :return: 响应数据
@@ -112,7 +112,7 @@ class ApiException(Exception):
         return sha.hexdigest()[:6]
 
     @staticmethod
-    def get_exception_info() -> ExceptionInfo:
+    def get_exception_info() -> "ExceptionInfo":
         """
         获取异常信息
         :return: 异常信息
@@ -126,12 +126,12 @@ class ApiException(Exception):
         }
 
     @property
-    def exception_data(self) -> ExceptionData:
+    def exception_data(self) -> "ExceptionData":
         """
         获取异常返回数据
         :return: 返回数据
         """
-        data: ExceptionData = {
+        data: "ExceptionData" = {
             "eid": self.eid,
             "time": self.time,
         }

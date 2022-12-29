@@ -15,7 +15,7 @@ CACHE_TTL = getattr(settings, "CACHE_TTL", 60 * 60 * 1)
 class CacheListModelMixin:
     @method_decorator(cache_page(CACHE_TTL))
     def list(
-        self: GenericViewSet, request: Request, *args: Any, **kwargs: Any
+        self: "GenericViewSet", request: "Request", *args: Any, **kwargs: Any
     ) -> Response:
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -31,7 +31,7 @@ class CacheListModelMixin:
 class CacheRetrieveModelMixin:
     @method_decorator(cache_page(CACHE_TTL))
     def retrieve(
-        self: GenericViewSet, request: Request, *args: Any, **kwargs: Any
+        self: "GenericViewSet", request: "Request", *args: Any, **kwargs: Any
     ) -> Response:
         instance = self.get_object()
         serializer = self.get_serializer(instance)

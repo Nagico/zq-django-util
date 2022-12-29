@@ -27,7 +27,7 @@ class OpenIDLoginView(TokenObtainPairView):
     queryset = AuthUser.objects.all()
     serializer_class = OpenIDLoginSerializer
 
-    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def post(self, request: "Request", *args: Any, **kwargs: Any) -> Response:
         """
         增加 post 方法, 支持 open id 登录
         """

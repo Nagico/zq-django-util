@@ -98,14 +98,14 @@ class ApiResponse:
     code: str
     detail: str
     msg: str
-    data: ResponseData
+    data: "ResponseData"
 
     def __init__(
         self,
         response_type: ResponseType = ResponseType.Success,
-        data: JSONVal = "",
+        data: "JSONVal" = "",
         msg: Optional[str] = None,
-        ex: Optional[ApiException] = None,
+        ex: Optional["ApiException"] = None,
     ):
         """
         Api 响应
@@ -127,7 +127,7 @@ class ApiResponse:
     def __str__(self) -> str:
         return f"code: {self.code}, detail: {self.detail}, msg: {self.msg}, data: {self.data}"
 
-    def __dict__(self) -> ResponseData:
+    def __dict__(self) -> "ResponseData":
         return {
             "code": self.code,
             "detail": self.detail,

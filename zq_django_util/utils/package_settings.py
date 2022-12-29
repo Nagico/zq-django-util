@@ -22,18 +22,18 @@ class PackageSettings:
     """
 
     setting_name: Optional[str] = None
-    DEFAULTS: Optional[SettingDict] = None
+    DEFAULTS: Optional["SettingDict"] = None
     IMPORT_STRINGS: Optional[List[str]] = None
 
-    defaults: SettingDict
+    defaults: "SettingDict"
     import_strings: List[str]
 
     _cached_attrs: Set[str]
-    _user_settings: SettingDict
+    _user_settings: "SettingDict"
 
     def __init__(
         self,
-        defaults: Optional[SettingDict] = None,
+        defaults: Optional["SettingDict"] = None,
         import_strings: Optional[List[str]] = None,
     ):
         if self.setting_name is None:
@@ -48,7 +48,7 @@ class PackageSettings:
         self._cached_attrs = set()
 
     @property
-    def user_settings(self) -> SettingDict:
+    def user_settings(self) -> "SettingDict":
         if not hasattr(self, "_user_settings"):
             assert self.setting_name is not None
             self._user_settings = getattr(settings, self.setting_name, {})

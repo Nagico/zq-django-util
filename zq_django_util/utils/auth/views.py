@@ -9,7 +9,6 @@ from zq_django_util.response import ResponseType
 from zq_django_util.utils.auth.serializers import (
     OpenIDLoginSerializer,
     PasswordLoginSerializer,
-    WechatLoginSerializer,
 )
 
 AuthUser = get_user_model()
@@ -35,15 +34,6 @@ class OpenIDLoginView(TokenObtainPairView):
             raise ApiException(ResponseType.ThirdLoginFailed, "微信登录失败，请稍后重试")
 
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
-
-
-class WechatLoginView(OpenIDLoginView):
-    """
-    微信登录视图
-    """
-
-    queryset = AuthUser.objects.all()
-    serializer_class = WechatLoginSerializer
 
 
 class PasswordLoginView(TokenObtainPairView):

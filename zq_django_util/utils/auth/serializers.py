@@ -7,8 +7,7 @@ from rest_framework_simplejwt.serializers import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from zq_django_util.utils.authentication import OpenIdAuth
-from zq_django_util.utils.wechat import get_openid
+from zq_django_util.utils.auth.authentication import OpenIdAuth
 
 AuthUser = get_user_model()
 
@@ -80,7 +79,7 @@ class OpenIDLoginSerializer(serializers.Serializer):
         return attrs["openid"]
 
 
-class WechatLoginSerializer(OpenIDLoginSerializer):
+class AbstractWechatLoginSerializer(OpenIDLoginSerializer):
     """
     微信登录序列化器
     """
@@ -97,7 +96,7 @@ class WechatLoginSerializer(OpenIDLoginSerializer):
         """
         重写获取 open_id 方法
         """
-        return get_openid(attrs["code"])["openid"]
+        raise NotImplementedError("请使用 get_openid 方法获取 openid")
 
 
 class PasswordLoginSerializer(TokenObtainPairSerializer):

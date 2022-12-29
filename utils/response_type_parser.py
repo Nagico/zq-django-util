@@ -2,11 +2,10 @@
 将错误码表格中 code、详情、备注、状态码、ResponseType 五列
 (无需拷贝 00000 的三行)拷贝至 error.ini 文件中，运行该程序更新 ResponseType
 """
-program_path = "../zq_django_util/response/__init__.py"
 
 
-def prepare_context() -> (str, str):
-    with open(program_path, "r", encoding="utf-8") as f:
+def prepare_context(path: str) -> (str, str):
+    with open(path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     above = []
@@ -29,23 +28,33 @@ def prepare_context() -> (str, str):
     return "".join(above), "".join(below)
 
 
-def write_file(above: str, content: list[str], below: str) -> None:
-    lines = [
-        "@unique",
-        "class ResponseType(ResponseTypeEnum):",
-        '    """API状态类型"""',
-        "",
-    ]
-    lines += [f"    {line}" for line in content]
+def write_file(
+    path: str, above: str, content: list[tuple[str, str]], below: str
+) -> None:
+    if path.endswith("py"):
+        lines = [
+            "@unique",
+            "class ResponseType(ResponseTypeEnum):",
+            '    """API状态类型"""',
+            "",
+        ]
+        lines += [f"    {line[0]}{line[1]}" for line in content]
+    elif path.endswith("pyi"):
+        lines = [
+            "class ResponseType(ResponseTypeEnum):",
+        ]
+        lines += [f"    {line[0]}..." for line in content]
+    else:
+        raise ValueError("path must be a python file")
 
-    with open(program_path, "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8") as f:
         f.write(above)
         f.write("\n".join(lines) + "\n")
         f.write(below)
 
 
-def get_new_content() -> list[str]:
-    content = ['Success = ("00000", "", 200)']
+def get_new_content() -> list[tuple[str, str]]:
+    content = [("Success = ", '("00000", "", 200)')]
     with open("error.ini", "r", encoding="utf-8") as f:
         lines = f.readlines()
         for line in lines:
@@ -54,11 +63,26 @@ def get_new_content() -> list[str]:
             detail = tmp[1]
             status = int(tmp[3])
             name = tmp[4]
-            content.append(f'{name} = ("{code}", "{detail}", {status})')
+            content.append((f"{name} = ", f'("{code}", "{detail}", {status})'))
 
     return content
 
 
+def main():
+    py_path = "../zq_django_util/response/__init__.py"
+    pyi_path = py_path + "i"
+
+    # read
+    py_st, py_ed = prepare_context(py_path)
+    pyi_st, pyi_ed = prepare_context(pyi_path)
+
+    # parse
+    content = get_new_content()
+
+    # write
+    write_file(py_path, py_st, content, py_ed)
+    write_file(pyi_path, pyi_st, content, pyi_ed)
+
+
 if __name__ == "__main__":
-    st, ed = prepare_context()
-    write_file(st, get_new_content(), ed)
+    main()

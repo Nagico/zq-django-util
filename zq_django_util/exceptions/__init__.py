@@ -2,26 +2,39 @@ import hashlib
 import random
 import time
 import traceback
+from datetime import datetime
 from sys import exc_info
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Optional
 
 from django.conf import settings
 from django.utils.timezone import now
 
-from zq_django_util.response import ResponseType
+if TYPE_CHECKING:
+    from zq_django_util.exceptions.types import ExceptionData, ExceptionInfo
+    from zq_django_util.response import ResponseData, ResponseType
 
 
 class ApiException(Exception):
     """API异常"""
 
+    record: bool
+    response_type: ResponseType
+    eid: Optional[str]
+    detail: str
+    msg: str
+    event_id: Optional[str]
+    inner: Optional[Exception]
+    exc_data: Optional[ExceptionInfo]
+    time: datetime
+
     def __init__(
         self,
-        type,
-        msg=None,
-        inner=None,
-        record=False,
-        detail=None,
-    ):
+        type: ResponseType,
+        msg: Optional[str] = None,
+        inner: Optional[Exception] = None,
+        record: bool = False,
+        detail: Optional[str] = None,
+    ) -> None:
         """
         API异常
         :param type: 异常类型
@@ -72,19 +85,18 @@ class ApiException(Exception):
         return res
 
     @property
-    def response_data(self):
+    def response_data(self) -> ResponseData:
         """
         获取响应数据
         :return: 响应数据
         """
         self.exc_data = self.get_exception_info()
-        data = {
+        return {
             "code": self.response_type.get_code(),
             "detail": self.detail,
             "msg": self.msg,
             "data": self.exception_data,
         }
-        return data
 
     @staticmethod
     def get_exp_id() -> str:
@@ -100,7 +112,7 @@ class ApiException(Exception):
         return sha.hexdigest()[:6]
 
     @staticmethod
-    def get_exception_info():
+    def get_exception_info() -> ExceptionInfo:
         """
         获取异常信息
         :return: 异常信息
@@ -114,12 +126,12 @@ class ApiException(Exception):
         }
 
     @property
-    def exception_data(self) -> Dict[str, Any]:
+    def exception_data(self) -> ExceptionData:
         """
         获取异常返回数据
         :return: 返回数据
         """
-        data = {
+        data: ExceptionData = {
             "eid": self.eid,
             "time": self.time,
         }

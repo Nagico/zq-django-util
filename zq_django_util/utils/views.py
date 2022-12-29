@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.utils import timezone
 from rest_framework.mixins import ListModelMixin
 from rest_framework.request import Request
@@ -10,7 +12,7 @@ class APIRootViewSet(ListModelMixin, GenericViewSet):
     API root view.
     """
 
-    def list(self, request: Request, *args, **kwargs) -> Response:
+    def list(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         user = request.user
         time = timezone.localtime().isoformat()
 

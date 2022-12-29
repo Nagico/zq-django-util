@@ -4,11 +4,11 @@
 Global defaults
 """
 
-import logging
+import loguru
 
 # Default logger
-log = logging.getLogger()
+log = loguru.logger
 
 
-def logger():
+def logger() -> loguru.Logger:
     return log

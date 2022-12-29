@@ -1,12 +1,30 @@
-from typing import Dict, List, Union
+from typing import List, TypedDict
 
 from zq_django_util.utils.package_settings import PackageSettings
+
+DrfLoggerSettingDict = TypedDict(
+    "DrfLoggerSettingDict",
+    {
+        "DEFAULT_DATABASE": str,
+        "QUEUE_MAX_SIZE": int,
+        "INTERVAL": int,
+        "DATABASE": bool,
+        "SIGNAL": bool,
+        "PATH_TYPE": str,
+        "SKIP_URL_NAME": List[str],
+        "SKIP_NAMESPACE": List[str],
+        "METHODS": List[str],
+        "STATUS_CODES": List[int],
+        "SENSITIVE_KEYS": List[str],
+    },
+    total=True,
+)
 
 
 class DrfLoggerSettings(PackageSettings):
     setting_name = "DRF_LOGGER"
 
-    DEFAULTS: Dict[str, Union[str, int, bool, list[str]]] = {
+    DEFAULTS: DrfLoggerSettingDict = {
         "DEFAULT_DATABASE": "default",
         "QUEUE_MAX_SIZE": 50,
         "INTERVAL": 10,
@@ -23,4 +41,4 @@ class DrfLoggerSettings(PackageSettings):
     IMPORT_STRINGS: List[str] = []
 
 
-drf_logger_settings = DrfLoggerSettings()  # type: ignore
+drf_logger_settings = DrfLoggerSettings()

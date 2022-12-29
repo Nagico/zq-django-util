@@ -1,3 +1,5 @@
+from typing import Any
+
 import rest_framework_simplejwt.settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
@@ -17,13 +19,13 @@ class OpenIDLoginSerializer(serializers.Serializer):
     OpenID Token 获取序列化器
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
         self.fields["openid"] = PasswordField()  # 前端传入 openid
 
     @classmethod
-    def get_token(cls, user):
+    def get_token(cls, user: AuthUser) -> RefreshToken:
         """
         获取 token(access与refresh)
 
@@ -35,7 +37,7 @@ class OpenIDLoginSerializer(serializers.Serializer):
             user
         )  # 调用 simple-jwt 中 token 生成方法, 需要在 settings 中指定 USER_ID_FIELD 为 uid
 
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         """
         重写验证器
 
@@ -72,7 +74,7 @@ class OpenIDLoginSerializer(serializers.Serializer):
         return data
 
     @staticmethod
-    def get_open_id(attrs):
+    def get_open_id(attrs: dict[str, Any]) -> str:
         """
         获取 openid
         """
@@ -92,7 +94,7 @@ class AbstractWechatLoginSerializer(OpenIDLoginSerializer):
         self.fields["code"] = PasswordField(label="前端获取code")  # 前端传入 code
 
     @staticmethod
-    def get_open_id(attrs):
+    def get_open_id(attrs: dict[str, Any]) -> str:
         """
         重写获取 open_id 方法
         """
@@ -100,7 +102,7 @@ class AbstractWechatLoginSerializer(OpenIDLoginSerializer):
 
 
 class PasswordLoginSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs):
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         data = super().validate(attrs)
         user_id_field = (
             rest_framework_simplejwt.settings.api_settings.USER_ID_FIELD

@@ -14,11 +14,17 @@ from rest_framework.views import set_rollback
 from sentry_sdk import capture_exception, set_tag, set_user
 
 from zq_django_util.exceptions import ApiException
+from zq_django_util.exceptions.types import ExtraHeaders
 from zq_django_util.response import ResponseType
 
 
 class ApiExceptionHandler:
-    def __init__(self, exc: Exception, context: ExceptionHandlerContext):
+    exc: Exception
+    context: ExceptionHandlerContext
+
+    def __init__(
+        self, exc: Exception, context: ExceptionHandlerContext
+    ) -> None:
         self.exc = exc
         self.context = context
 
@@ -120,7 +126,7 @@ class ApiExceptionHandler:
         )
 
     @staticmethod
-    def get_headers(exc: Exception):
+    def get_headers(exc: Exception) -> ExtraHeaders:
         """
         获取额外响应头
         :param exc: 异常

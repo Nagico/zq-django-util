@@ -1,4 +1,6 @@
 # 自定义返回格式
+from typing import Any, Mapping, Optional
+
 from rest_framework.renderers import JSONRenderer
 
 from zq_django_util.response import ApiResponse
@@ -6,7 +8,12 @@ from zq_django_util.response import ApiResponse
 
 class CustomRenderer(JSONRenderer):
     # 重构render方法
-    def render(self, data, accepted_media_type=None, renderer_context=None):
+    def render(
+        self,
+        data: Any,
+        accepted_media_type: Optional[str] = None,
+        renderer_context: Optional[Mapping[str, Any]] = None,
+    ) -> Any:
         response = renderer_context["response"]
         if renderer_context:
             try:  # 记录请求数据，便于日志处理

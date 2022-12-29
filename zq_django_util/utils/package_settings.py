@@ -1,9 +1,17 @@
-from typing import Dict, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Union
 
 from django.conf import settings
 from django.core.signals import setting_changed
 from django.dispatch import receiver
 from rest_framework.settings import import_from_string, perform_import
+
+if TYPE_CHECKING:
+    from zq_django_util.utils.types import SimpleValue
+
+    SettingValue = Union[
+        None, SimpleValue, List["SettingValue"], Dict[str, "SettingValue"]
+    ]
+    SettingDict = Dict[str, SettingValue]
 
 
 class PackageSettings:
@@ -14,10 +22,20 @@ class PackageSettings:
     """
 
     setting_name: Optional[str] = None
-    DEFAULTS: Optional[Dict[str, Union[str, int, bool, list[str]]]] = None
-    IMPORT_STRINGS: Optional[list[str]] = None
+    DEFAULTS: Optional[SettingDict] = None
+    IMPORT_STRINGS: Optional[List[str]] = None
 
-    def __init__(self, defaults=None, import_strings=None):
+    defaults: SettingDict
+    import_strings: List[str]
+
+    _cached_attrs: Set[str]
+    _user_settings: SettingDict
+
+    def __init__(
+        self,
+        defaults: Optional[SettingDict] = None,
+        import_strings: Optional[List[str]] = None,
+    ):
         if self.setting_name is None:
             raise NotImplementedError("setting_name must be set")
         if self.DEFAULTS is None:
@@ -30,13 +48,13 @@ class PackageSettings:
         self._cached_attrs = set()
 
     @property
-    def user_settings(self) -> Dict[str, Union[str, int, bool, list[str]]]:
+    def user_settings(self) -> SettingDict:
         if not hasattr(self, "_user_settings"):
             assert self.setting_name is not None
             self._user_settings = getattr(settings, self.setting_name, {})
         return self._user_settings
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> "SettingValue":
         if attr not in self.defaults:
             raise AttributeError("Invalid API setting: '%s'" % attr)
 

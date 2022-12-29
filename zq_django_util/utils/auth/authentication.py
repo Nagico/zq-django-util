@@ -1,6 +1,9 @@
 # 重写 jwt 相关验证类
+from typing import Any, Optional
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import BaseBackend
+from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.settings import api_settings
 
@@ -15,7 +18,9 @@ class OpenIdAuth(BaseBackend):
     OpenID 验证模块(获取token时调用)
     """
 
-    def authenticate(self, request, openid=None, **kwargs):
+    def authenticate(
+        self, request: Request, openid: Optional[str] = None, **kwargs: Any
+    ) -> Optional[AuthUser]:
         """
         重写认证方法
 
@@ -43,7 +48,7 @@ class OpenIdAuth(BaseBackend):
             user.save()
         return user
 
-    def get_user(self, user_id):
+    def get_user(self, user_id: int) -> Optional[AuthUser]:
         """
         重写用户获取方法
 
@@ -63,11 +68,11 @@ class ActiveUserAuthentication(JWTAuthentication):
     基础用户认证类
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.user_model = AuthUser
 
-    def get_user(self, validated_token):
+    def get_user(self, validated_token: dict[str, Any]) -> Optional[AuthUser]:
         """
         Attempts to find and return a user using the given validated token.
         """
@@ -81,9 +86,7 @@ class ActiveUserAuthentication(JWTAuthentication):
 
         # 获取用户模型
         try:
-            user = self.user_model.objects.get(
-                **{api_settings.USER_ID_FIELD: user_id}
-            )
+            self.user_model.objects(**{api_settings.USER_ID_FIELD: user_id})
         except self.user_model.DoesNotExist:
             raise ApiException(
                 ResponseType.ResourceNotFound, "用户不存在", record=True
@@ -95,7 +98,7 @@ class ActiveUserAuthentication(JWTAuthentication):
         return user
 
     @staticmethod
-    def check_activate(user: AuthUser):
+    def check_activate(user: AuthUser) -> None:
         """
         检查是否激活
         """
@@ -109,5 +112,5 @@ class NormalUserAuthentication(ActiveUserAuthentication):
     """
 
     @staticmethod
-    def check_activate(user):
+    def check_activate(user: AuthUser) -> None:
         pass

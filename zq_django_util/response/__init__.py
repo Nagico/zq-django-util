@@ -1,11 +1,16 @@
 from dataclasses import dataclass
 from enum import Enum, unique
+from typing import TYPE_CHECKING, Optional
 
 from django.http import JsonResponse
 
+if TYPE_CHECKING:
+    from zq_django_util.exceptions import ApiException
+    from zq_django_util.response.types import JSONVal, ResponseData
+
 
 class ResponseTypeEnum(Enum):
-    def get_code(self) -> int:
+    def get_code(self) -> str:
         """
         根据枚举名称取状态码code
 
@@ -89,12 +94,18 @@ class ResponseType(ResponseTypeEnum):
 class ApiResponse:
     """API响应数据结构"""
 
+    status_code: int
+    code: str
+    detail: str
+    msg: str
+    data: ResponseData
+
     def __init__(
         self,
-        response_type=ResponseType.Success,
-        data="",
-        msg=None,
-        ex=None,
+        response_type: ResponseType = ResponseType.Success,
+        data: JSONVal = "",
+        msg: Optional[str] = None,
+        ex: Optional[ApiException] = None,
     ):
         """
         Api 响应
@@ -108,15 +119,15 @@ class ApiResponse:
             msg = ex.msg  # 获取传入异常的消息
 
         self.status_code = response_type.get_status_code()
-        self.code: int = response_type.get_code()
-        self.detail: str = response_type.get_detail()
-        self.msg: str = msg if msg else self.detail
+        self.code = response_type.get_code()
+        self.detail = response_type.get_detail()
+        self.msg = msg if msg else self.detail
         self.data = data
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"code: {self.code}, detail: {self.detail}, msg: {self.msg}, data: {self.data}"
 
-    def __dict__(self):
+    def __dict__(self) -> ResponseData:
         return {
             "code": self.code,
             "detail": self.detail,
@@ -124,5 +135,5 @@ class ApiResponse:
             "data": self.data,
         }
 
-    def to_json_response(self):
+    def to_json_response(self) -> JsonResponse:
         return JsonResponse(self.__dict__(), status=self.status_code)

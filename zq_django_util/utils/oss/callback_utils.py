@@ -3,7 +3,7 @@ import datetime
 import hashlib
 import hmac
 import json
-from typing import Any, Optional, TypedDict
+from typing import AnyStr, Optional, TypedDict
 from urllib.parse import unquote
 from urllib.request import urlopen
 
@@ -11,7 +11,10 @@ from Crypto.Hash import MD5
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from django.conf import settings
+from django.core.cache import cache
 from rest_framework.request import Request
+
+from zq_django_util.utils.types import JSONValue
 
 
 class OSSCallbackToken(TypedDict):
@@ -33,7 +36,7 @@ def get_iso_8601(expire: float) -> str:
 def get_token(
     key: str,
     callback: Optional[dict[str, str]],
-    policy: Optional[dict[str, Any]] = None,
+    policy: Optional[JSONValue] = None,
 ) -> OSSCallbackToken:
     """
     获取直传签名token
@@ -104,9 +107,7 @@ def check_callback_signature(request: Request) -> bool:
             "http://gosspublic.alicdn.com/"
         ) and not pub_key_url.startswith("https://gosspublic.alicdn.com/"):
             return False
-        url_reader = urlopen(pub_key_url)
-        # you can cache it
-        pub_key = url_reader.read()
+        pub_key = get_pub_key(pub_key_url)
     except Exception:
         return False
 
@@ -138,3 +139,28 @@ def check_callback_signature(request: Request) -> bool:
         return True
     except Exception:
         return False
+
+
+def get_pub_key(pub_key_url: str) -> AnyStr:
+    """
+    获取公钥
+    :param pub_key_url: url
+    :return:
+    """
+    key = f"oss:pub_key:{pub_key_url}"
+
+    def get_online() -> AnyStr:
+        """
+        从网络获取
+        """
+        response = urlopen(pub_key_url)
+        return response.read()
+
+    try:
+        res = cache.get(key, None)
+        if res is None:
+            res = get_online()
+            cache.set(key, res)
+        return res
+    except Exception:
+        return get_online()

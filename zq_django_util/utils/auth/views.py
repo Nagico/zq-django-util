@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING, Any
+
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.response import Response
@@ -11,6 +13,9 @@ from zq_django_util.utils.auth.serializers import (
     PasswordLoginSerializer,
 )
 
+if TYPE_CHECKING:
+    from rest_framework.request import Request
+
 AuthUser = get_user_model()
 
 
@@ -22,7 +27,7 @@ class OpenIDLoginView(TokenObtainPairView):
     queryset = AuthUser.objects.all()
     serializer_class = OpenIDLoginSerializer
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """
         增加 post 方法, 支持 open id 登录
         """

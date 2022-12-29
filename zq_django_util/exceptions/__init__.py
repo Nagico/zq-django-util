@@ -16,11 +16,11 @@ class ApiException(Exception):
 
     def __init__(
         self,
-        type: ResponseType,
-        msg: Optional[str] = None,
-        inner: Optional[Exception] = None,
-        record: bool = False,
-        detail: Optional[str] = None,
+        type,
+        msg=None,
+        inner=None,
+        record=False,
+        detail=None,
     ):
         """
         API异常
@@ -71,7 +71,8 @@ class ApiException(Exception):
             res = msg or self.response_type.get_detail()  # 获取异常详情
         return res
 
-    def get_response_data(self) -> Dict[str, Any]:
+    @property
+    def response_data(self):
         """
         获取响应数据
         :return: 响应数据
@@ -81,7 +82,7 @@ class ApiException(Exception):
             "code": self.response_type.get_code(),
             "detail": self.detail,
             "msg": self.msg,
-            "data": self.get_exception_data(),
+            "data": self.exception_data,
         }
         return data
 
@@ -99,7 +100,7 @@ class ApiException(Exception):
         return sha.hexdigest()[:6]
 
     @staticmethod
-    def get_exception_info() -> Dict[str, Any]:
+    def get_exception_info():
         """
         获取异常信息
         :return: 异常信息
@@ -112,7 +113,8 @@ class ApiException(Exception):
             "stack": traceback.format_stack(),
         }
 
-    def get_exception_data(self) -> Dict[str, Any]:
+    @property
+    def exception_data(self) -> Dict[str, Any]:
         """
         获取异常返回数据
         :return: 返回数据

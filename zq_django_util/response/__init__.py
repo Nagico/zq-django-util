@@ -1,10 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, unique
-from typing import Any, Dict, List, Optional, Union
 
 from django.http import JsonResponse
-
-from zq_django_util.exceptions import ApiException
 
 
 class ResponseTypeEnum(Enum):
@@ -40,8 +37,11 @@ class ResponseType(ResponseTypeEnum):
 
     Success = ("00000", "", 200)
     ClientError = ("A0000", "用户端错误", 400)
+    LoginFailed = ("A0210", "用户登录失败", 400)
+    UsernameNotExist = ("A0211", "用户名不存在", 400)
     PasswordWrong = ("A0212", "用户密码错误", 400)
     LoginFailedExceed = ("A0213", "用户输入密码次数超限", 400)
+    PhoneNotExist = ("A0214", "手机号不存在", 400)
     LoginExpired = ("A0220", "用户登录已过期", 401)
     TokenInvalid = ("A0221", "token 无效或已过期", 401)
     ThirdLoginFailed = ("A0230", "用户第三方登录失败", 401)
@@ -91,11 +91,18 @@ class ApiResponse:
 
     def __init__(
         self,
-        response_type: ResponseType = ResponseType.Success,
-        data: Union[Dict[Any, Any], List[Any], str, int, float, bool] = "",
-        msg: Optional[str] = None,
-        ex: Optional[ApiException] = None,
+        response_type=ResponseType.Success,
+        data="",
+        msg=None,
+        ex=None,
     ):
+        """
+        Api 响应
+        :param response_type: 响应类型
+        :param data: 响应数据
+        :param msg: 面向用户的响应消息
+        :param ex: Api异常(用于获取相关数据)
+        """
         if ex:  # 优先使用异常
             response_type = ex.response_type  # 获取传入异常的类型
             msg = ex.msg  # 获取传入异常的消息

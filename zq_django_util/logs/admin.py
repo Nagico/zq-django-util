@@ -41,9 +41,7 @@ class ExportCsvMixin:
 
         writer.writerow(field_names)
         for obj in queryset:
-            row = writer.writerow(
-                [getattr(obj, field) for field in field_names]
-            )
+            writer.writerow([getattr(obj, field) for field in field_names])
 
         return response
 
@@ -153,7 +151,7 @@ class RequestLogAdmin(admin.ModelAdmin, ExportCsvMixin):
         )
         try:
             filtered_query_set = response.context_data["cl"].queryset
-        except:
+        except Exception:
             return response
         analytics_model = (
             filtered_query_set.values("create_time__date")

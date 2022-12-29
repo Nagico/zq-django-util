@@ -107,7 +107,7 @@ def check_callback_signature(request: Request) -> bool:
         url_reader = urlopen(pub_key_url)
         # you can cache it
         pub_key = url_reader.read()
-    except:
+    except Exception:
         return False
 
     # 获取base64解码后的签名
@@ -136,5 +136,5 @@ def check_callback_signature(request: Request) -> bool:
         verifier = PKCS1_v1_5.new(rsa_pub)
         verifier.verify(auth_md5, authorization)
         return True
-    except:
+    except Exception:
         return False

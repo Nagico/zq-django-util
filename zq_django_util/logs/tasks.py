@@ -108,7 +108,7 @@ class HandleLogAsync(Thread):
                     )
                     if res:
                         request_items.append(RequestLog(**res))
-            except:
+            except Exception:
                 pass
 
         if request_items or exception_items:
@@ -202,7 +202,7 @@ class HandleLogAsync(Thread):
                     }
                 else:
                     request_data[key] = value
-        except:
+        except Exception:
             pass
         # endregion
 

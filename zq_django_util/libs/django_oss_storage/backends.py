@@ -18,7 +18,7 @@ from django.core.files import File
 from django.core.files.storage import Storage
 
 try:
-    from django.utils.encoding import force_bytes, force_text
+    from django.utils.encoding import force_bytes, force_text  # noqa: F401
 except ImportError:
     from django.utils.encoding import force_str as force_text  # type: ignore
 
@@ -164,7 +164,7 @@ class OssStorage(Storage):
             return OssFile(tmpf, target_name, self)
         except oss2.exceptions.NoSuchKey:
             raise OssError("%s does not exist" % name)
-        except:
+        except Exception:
             raise OssError("Failed to open %s" % name)
 
     def _save(self, name, content):
@@ -270,14 +270,14 @@ class OssStorage(Storage):
     def delete(self, name):
         name = self._get_key_name(name)
         logger().debug("delete name: %s", name)
-        result = self.bucket.delete_object(name)
+        self.bucket.delete_object(name)
 
     def delete_with_slash(self, dirname):
         name = self._get_key_name(dirname)
         if not name.endswith("/"):
             name += "/"
         logger().debug("delete name: %s", name)
-        result = self.bucket.delete_object(name)
+        self.bucket.delete_object(name)
 
 
 class OssMediaStorage(OssStorage):

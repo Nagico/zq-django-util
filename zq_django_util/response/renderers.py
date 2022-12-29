@@ -12,7 +12,7 @@ class CustomRenderer(JSONRenderer):
             try:  # 记录请求数据，便于日志处理
                 request_data = renderer_context["request"].data
                 response.api_request_data = request_data
-            except:
+            except Exception:
                 pass
 
             if not response.exception:  # 如果不是异常

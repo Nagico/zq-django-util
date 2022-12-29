@@ -64,9 +64,7 @@ def get_user_phone_num(code: str) -> str:
         result = wechat_client.wxa.getuserphonenumber(code)
 
         if result["phone_info"]["countryCode"] != "86":
-            raise ApiException(
-                ResponseType.ParamValidationFailed, f"仅支持中国大陆手机号"
-            )
+            raise ApiException(ResponseType.ParamValidationFailed, "仅支持中国大陆手机号")
 
         return result["phone_info"]["purePhoneNumber"]
     except WeChatClientException as e:

@@ -23,7 +23,10 @@ class ApiExceptionHandler:
         self.context = context
 
     def run(self) -> Optional[Response]:
-
+        """
+        处理异常
+        :return: 响应数据或失败为None
+        """
         exc = self.convert_known_exceptions(self.exc)  # 将django的异常转换为drf的异常
 
         if getattr(
@@ -39,7 +42,7 @@ class ApiExceptionHandler:
             response = self.get_response(exc)
             if exc.record:  # 如果需要记录
                 if settings.SENTRY_ENABLE:
-                    self.notify_sentry(exc, response)
+                    self._notify_sentry(exc, response)
                 # 将event_id写入响应数据
                 response.data["data"]["event_id"] = exc.event_id
                 # 将异常信息记录到response中，便于logger记录
@@ -47,22 +50,19 @@ class ApiExceptionHandler:
 
         return response
 
-    def notify_sentry(self, exc, response):
+    def _notify_sentry(self, exc: ApiException, response: Response) -> None:
+        """
+        通知sentry, 可在notify_sentry中自定义其他内容
+        :param exc: Api异常
+        :param response: 响应数据
+        :return: None
+        """
         try:
-            user = self.context["request"].user
-            if user.is_authenticated:
-                set_tag("role", "user")
-                set_user(
-                    {
-                        "id": user.id,
-                        "email": user.username,
-                        "phone": user.phone,
-                    }
-                )
-            else:
-                set_tag("role", "guest")
-        except:
+            self.notify_sentry(exc, response)  # 调用自定义通知
+        except Exception:
             pass
+
+        # 默认异常汇报
         set_tag("exception_type", exc.response_type.name)
         sentry_sdk.set_context(
             "exp_info",
@@ -76,9 +76,34 @@ class ApiExceptionHandler:
         sentry_sdk.set_context("details", response.data["data"]["details"])
         exc.event_id = capture_exception(self.exc)  # 发送至sentry
 
+    def notify_sentry(self, exc: ApiException, response: Response) -> None:
+        """
+        自定义sentry通知
+        :param exc: Api异常
+        :param response: 响应数据
+        :return: None
+        """
+        user = self.context["request"].user
+        if user.is_authenticated:
+            set_tag("role", "user")
+            set_user(
+                {
+                    "id": user.id,
+                    "email": user.username,
+                    "phone": user.phone,
+                }
+            )
+        else:
+            set_tag("role", "guest")
+
     def get_response(self, exc: ApiException) -> Response:
+        """
+        获取响应数据
+        :param exc: Api异常
+        :return:
+        """
         headers = self.get_headers(exc.inner)
-        data = exc.get_response_data()
+        data = exc.response_data
 
         info = None
         if exc.inner:
@@ -95,7 +120,12 @@ class ApiExceptionHandler:
         )
 
     @staticmethod
-    def get_headers(exc: Exception) -> dict:
+    def get_headers(exc: Exception):
+        """
+        获取额外响应头
+        :param exc: 异常
+        :return: headers
+        """
         headers = {}
         if getattr(exc, "auth_header", None):
             headers["WWW-Authenticate"] = exc.auth_header

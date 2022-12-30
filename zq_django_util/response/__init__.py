@@ -10,7 +10,8 @@ if TYPE_CHECKING:
 
 
 class ResponseTypeEnum(Enum):
-    def get_code(self) -> str:
+    @property
+    def code(self) -> str:
         """
         根据枚举名称取状态码code
 
@@ -18,7 +19,8 @@ class ResponseTypeEnum(Enum):
         """
         return self.value[0]
 
-    def get_detail(self) -> str:
+    @property
+    def detail(self) -> str:
         """
         根据枚举名称取状态说明message
 
@@ -26,7 +28,8 @@ class ResponseTypeEnum(Enum):
         """
         return self.value[1]
 
-    def get_status_code(self) -> int:
+    @property
+    def status_code(self) -> int:
         """
         根据枚举名称取状态码status_code
 
@@ -118,9 +121,9 @@ class ApiResponse:
             response_type = ex.response_type  # 获取传入异常的类型
             msg = ex.msg  # 获取传入异常的消息
 
-        self.status_code = response_type.get_status_code()
-        self.code = response_type.get_code()
-        self.detail = response_type.get_detail()
+        self.status_code = response_type.status_code()
+        self.code = response_type.code()
+        self.detail = response_type.detail()
         self.msg = msg if msg else self.detail
         self.data = data
 

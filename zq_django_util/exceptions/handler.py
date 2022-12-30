@@ -248,7 +248,9 @@ def exception_handler(
         else:
             module_class = globals()[class_name]
 
-        if not issubclass(module_class, ApiExceptionHandler):
+        if module_class != ApiExceptionHandler and not issubclass(
+            module_class, ApiExceptionHandler
+        ):
             raise ImportError(
                 f"{handler_class} is not a subclass of ApiExceptionHandler"
             )

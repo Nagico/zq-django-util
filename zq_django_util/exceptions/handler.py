@@ -8,7 +8,6 @@ from drf_standardized_errors.formatter import ExceptionFormatter
 from drf_standardized_errors.types import ExceptionHandlerContext
 from rest_framework.response import Response
 from rest_framework.views import set_rollback
-from sentry_sdk import capture_exception, set_tag, set_user
 
 from zq_django_util.exceptions import ApiException
 from zq_django_util.exceptions.configs import zq_exception_settings
@@ -67,7 +66,7 @@ class ApiExceptionHandler:
             pass
 
         # 默认异常汇报
-        set_tag("exception_type", exc.response_type.name)
+        sentry_sdk.api.set_tag("exception_type", exc.response_type.name)
         sentry_sdk.set_context(
             "exp_info",
             {
@@ -78,7 +77,7 @@ class ApiExceptionHandler:
             },
         )
         sentry_sdk.set_context("details", response.data["data"]["details"])
-        exc.event_id = capture_exception(self.exc)  # 发送至sentry
+        exc.event_id = sentry_sdk.api.capture_exception(self.exc)  # 发送至sentry
 
     def notify_sentry(self, exc: ApiException, response: Response) -> None:
         """
@@ -89,16 +88,16 @@ class ApiExceptionHandler:
         """
         user = self.context["request"].user
         if user.is_authenticated:
-            set_tag("role", "user")
-            set_user(
+            sentry_sdk.api.set_tag("role", "user")
+            sentry_sdk.api.set_user(
                 {
                     "id": user.id,
                     "email": user.username,
-                    "phone": user.phone,
+                    "phone": user.phone if hasattr(user, "phone") else None,
                 }
             )
         else:
-            set_tag("role", "guest")
+            sentry_sdk.api.set_tag("role", "guest")
 
     def get_response(self, exc: ApiException) -> Response:
         """

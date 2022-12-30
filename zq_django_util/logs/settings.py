@@ -1,5 +1,8 @@
 from typing import List, TypedDict
 
+from django.core.signals import setting_changed
+from django.dispatch import receiver
+
 from zq_django_util.utils.package_settings import PackageSettings
 
 DrfLoggerSettingDict = TypedDict(
@@ -42,3 +45,8 @@ class DrfLoggerSettings(PackageSettings):
 
 
 drf_logger_settings = DrfLoggerSettings()
+
+
+@receiver(setting_changed)
+def reload_settings(*args, **kwargs):
+    drf_logger_settings.reload_package_settings(*args, **kwargs)

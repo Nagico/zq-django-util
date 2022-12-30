@@ -1,8 +1,6 @@
 from typing import TYPE_CHECKING, Dict, List, Optional, Set, Union
 
 from django.conf import settings
-from django.core.signals import setting_changed
-from django.dispatch import receiver
 from rest_framework.settings import import_from_string, perform_import
 
 if TYPE_CHECKING:
@@ -87,7 +85,6 @@ class PackageSettings:
         if hasattr(self, "_user_settings"):
             delattr(self, "_user_settings")
 
-    @receiver(setting_changed)
     def reload_package_settings(self, *args, **kwargs) -> None:
         setting = kwargs["setting"]
         if setting == self.setting_name:

@@ -122,7 +122,7 @@ class ApiExceptionHandler:
         data["data"]["details"] = info
 
         return Response(
-            data, status=exc.response_type.status_code(), headers=headers
+            data, status=exc.response_type.status_code, headers=headers
         )
 
     @staticmethod

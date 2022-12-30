@@ -1,7 +1,7 @@
 import re
 from typing import Union
 
-from zq_django_util.logs.settings import drf_logger_settings
+from zq_django_util.logs.configs import drf_logger_settings
 
 
 def get_headers(request=None):

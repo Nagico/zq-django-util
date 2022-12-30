@@ -1,5 +1,3 @@
-import importlib
-import sys
 from typing import Optional, Union
 
 import django.core.exceptions as django_exceptions
@@ -13,7 +11,7 @@ from rest_framework.views import set_rollback
 from sentry_sdk import capture_exception, set_tag, set_user
 
 from zq_django_util.exceptions import ApiException
-from zq_django_util.exceptions.settings import zq_exception_settings
+from zq_django_util.exceptions.configs import zq_exception_settings
 from zq_django_util.exceptions.types import ExtraHeaders
 from zq_django_util.response import ResponseType
 
@@ -236,22 +234,11 @@ def exception_handler(
     """
     handler_class = zq_exception_settings.EXCEPTION_HANDLER_CLASS
 
-    try:
-        package_name, class_name = handler_class.rsplit(".", 1)
+    if handler_class != ApiExceptionHandler and not issubclass(
+        handler_class, ApiExceptionHandler
+    ):
+        raise ImportError(
+            f"{handler_class} is not a subclass of ApiExceptionHandler"
+        )
 
-        if handler_class not in sys.modules:
-            module = importlib.import_module(package_name)  # 动态导入
-            module_class = getattr(module, class_name)  # 反射获取模块下的类
-        else:
-            module_class = globals()[class_name]
-
-        if module_class != ApiExceptionHandler and not issubclass(
-            module_class, ApiExceptionHandler
-        ):
-            raise ImportError(
-                f"{handler_class} is not a subclass of ApiExceptionHandler"
-            )
-
-        return module_class(exc, context).run()
-    except Exception:
-        raise ValueError(f"{handler_class} isn't a ApiExceptionHandler module")
+    return handler_class(exc, context).run()

@@ -27,7 +27,7 @@ class ZqExceptionSettings(PackageSettings):
         "SENTRY_DSN": "",
     }
 
-    IMPORT_STRINGS: List[str] = []
+    IMPORT_STRINGS: List[str] = ["EXCEPTION_HANDLER_CLASS"]
 
 
 zq_exception_settings = ZqExceptionSettings()

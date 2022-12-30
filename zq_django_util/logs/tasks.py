@@ -15,8 +15,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from zq_django_util.exceptions import ApiException
+from zq_django_util.logs.configs import drf_logger_settings
 from zq_django_util.logs.models import ExceptionLog, RequestLog
-from zq_django_util.logs.settings import drf_logger_settings
 from zq_django_util.logs.utils import (
     get_client_ip,
     get_headers,

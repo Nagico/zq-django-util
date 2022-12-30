@@ -29,6 +29,7 @@ def pytest_configure(config):
     # USE_L10N is deprecated, and will be removed in Django 5.0.
     use_l10n = {"USE_L10N": True} if django.VERSION < (4, 0) else {}
     settings.configure(
+        DEBUG=True,
         DEBUG_PROPAGATE_EXCEPTIONS=True,
         DATABASES={
             "default": {

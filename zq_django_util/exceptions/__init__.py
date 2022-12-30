@@ -32,7 +32,7 @@ class ApiException(Exception):
         type: "ResponseType",
         msg: Optional[str] = None,
         inner: Optional[Exception] = None,
-        record: bool = False,
+        record: Optional[bool] = None,
         detail: Optional[str] = None,
     ) -> None:
         """
@@ -43,7 +43,10 @@ class ApiException(Exception):
         :param record: 是否记录异常
         :param detail: 异常详情(面向开发者)
         """
-        self.record = record or type.get_status_code() == 500  # 是否记录异常(500强制记录)
+        self.record = (
+            record if record is not None else type.status_code == 500
+        )  # 是否记录异常
+
         self.response_type: "ResponseType" = type
         if self.record:  # 记录异常
             self.eid = self.get_exp_id()  # 异常id
@@ -65,7 +68,7 @@ class ApiException(Exception):
         :param detail: 自定义异常详情
         :return: 异常详情
         """
-        res = detail or self.response_type.get_detail()  # 获取异常详情
+        res = detail or self.response_type.detail  # 获取异常详情
         if self.record:  # 记录异常
             res = f"{res}, {self.eid}"  # 将自定义异常详情添加到末尾
         return res
@@ -81,7 +84,7 @@ class ApiException(Exception):
             if msg:  # 如果有自定义异常用户提示
                 res = f"{res}, {msg}"  # 将自定义用户提示添加到末尾
         else:  # 不记录异常
-            res = msg or self.response_type.get_detail()  # 获取异常详情
+            res = msg or self.response_type.detail  # 获取异常详情
         return res
 
     @property
@@ -92,7 +95,7 @@ class ApiException(Exception):
         """
         self.exc_data = self.get_exception_info()
         return {
-            "code": self.response_type.get_code(),
+            "code": self.response_type.code,
             "detail": self.detail,
             "msg": self.msg,
             "data": self.exception_data,

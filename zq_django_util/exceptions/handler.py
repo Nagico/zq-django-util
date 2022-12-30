@@ -11,8 +11,9 @@ from rest_framework.views import set_rollback
 
 from zq_django_util.exceptions import ApiException
 from zq_django_util.exceptions.configs import zq_exception_settings
-from zq_django_util.exceptions.types import ApiExceptionResponse, ExtraHeaders
+from zq_django_util.exceptions.types import ExtraHeaders
 from zq_django_util.response import ResponseType
+from zq_django_util.response.types import ApiExceptionResponse
 
 
 class ApiExceptionHandler:

@@ -3,7 +3,11 @@ URLConf for test suite.
 """
 from rest_framework import routers
 
+from zq_django_util.utils.views import APIRootViewSet
+
 router = routers.SimpleRouter()
+
+router.register("test", APIRootViewSet, basename="test")
 
 urlpatterns = []
 

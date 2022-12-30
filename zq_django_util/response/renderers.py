@@ -4,6 +4,7 @@ from typing import Any, Mapping, Optional
 from rest_framework.renderers import JSONRenderer
 
 from zq_django_util.response import ApiResponse
+from zq_django_util.response.types import ApiExceptionResponse
 
 
 class CustomRenderer(JSONRenderer):
@@ -14,8 +15,8 @@ class CustomRenderer(JSONRenderer):
         accepted_media_type: Optional[str] = None,
         renderer_context: Optional[Mapping[str, Any]] = None,
     ) -> Any:
-        response = renderer_context["response"]
         if renderer_context:
+            response: ApiExceptionResponse = renderer_context["response"]
             try:  # 记录请求数据，便于日志处理
                 request_data = renderer_context["request"].data
                 response.api_request_data = request_data

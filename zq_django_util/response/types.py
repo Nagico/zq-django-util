@@ -1,5 +1,9 @@
 from typing import Dict, List, TypedDict, Union
 
+from rest_framework.response import Response
+
+from zq_django_util.exceptions import ApiException
+
 JSONVal = Union[
     None, bool, str, float, int, List["JSONVal"], Dict[str, "JSONVal"]
 ]
@@ -10,3 +14,8 @@ class ResponseData(TypedDict, total=True):
     detail: str
     msg: str
     data: JSONVal
+
+
+class ApiExceptionResponse(Response):
+    exception_data: ApiException
+    exception: bool

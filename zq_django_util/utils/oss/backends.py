@@ -14,7 +14,7 @@ from django.utils.deconstruct import deconstructible
 from django.utils.timezone import utc
 from oss2.models import GetObjectMetaResult
 
-from .settings import oss_settings
+from .configs import oss_settings
 
 if VERSION[0] < 4:
     from django.utils.encoding import force_text

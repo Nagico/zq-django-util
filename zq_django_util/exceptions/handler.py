@@ -5,7 +5,6 @@ from typing import Optional, Union
 import django.core.exceptions as django_exceptions
 import rest_framework.exceptions as drf_exceptions
 import sentry_sdk
-from django.conf import settings
 from django.http import Http404
 from drf_standardized_errors.formatter import ExceptionFormatter
 from drf_standardized_errors.types import ExceptionHandlerContext
@@ -14,6 +13,7 @@ from rest_framework.views import set_rollback
 from sentry_sdk import capture_exception, set_tag, set_user
 
 from zq_django_util.exceptions import ApiException
+from zq_django_util.exceptions.settings import zq_exception_settings
 from zq_django_util.exceptions.types import ExtraHeaders
 from zq_django_util.response import ResponseType
 
@@ -35,8 +35,8 @@ class ApiExceptionHandler:
         """
         exc = self.convert_known_exceptions(self.exc)  # 将django的异常转换为drf的异常
 
-        if getattr(
-            settings, "EXCEPTION_UNKNOWN_HANDLE", True
+        if (
+            zq_exception_settings.EXCEPTION_UNKNOWN_HANDLE
         ):  # 未知异常处理（非drf、api的异常）
             exc = self.convert_unhandled_exceptions(exc)  # 将未知异常转换为drf异常
 
@@ -47,7 +47,7 @@ class ApiExceptionHandler:
         if isinstance(exc, ApiException):  # 如果是api异常则进行解析
             response = self.get_response(exc)
             if exc.record:  # 如果需要记录
-                if settings.SENTRY_ENABLE:
+                if zq_exception_settings.SENTRY_ENABLE:
                     self._notify_sentry(exc, response)
                 # 将event_id写入响应数据
                 response.data["data"]["event_id"] = exc.event_id
@@ -234,10 +234,7 @@ def exception_handler(
     :param context: 上下文
     :return: 处理程序
     """
-    handler_class = settings.REST_FRAMEWORK.get(
-        "EXCEPTION_HANDLER_CLASS",
-        "zq_django_util.exceptions.handler.ApiExceptionHandler",
-    )
+    handler_class = zq_exception_settings.EXCEPTION_HANDLER_CLASS
 
     try:
         package_name, class_name = handler_class.rsplit(".", 1)

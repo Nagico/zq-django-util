@@ -121,9 +121,9 @@ class ApiResponse:
             response_type = ex.response_type  # 获取传入异常的类型
             msg = ex.msg  # 获取传入异常的消息
 
-        self.status_code = response_type.status_code()
-        self.code = response_type.code()
-        self.detail = response_type.detail()
+        self.status_code = response_type.status_code
+        self.code = response_type.code
+        self.detail = response_type.detail
         self.msg = msg if msg else self.detail
         self.data = data
 

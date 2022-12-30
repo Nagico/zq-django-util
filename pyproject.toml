@@ -32,12 +32,15 @@ use_parentheses = true
 multi_line_output = 3
 line_length = 80
 
-#[tool.pytest.ini_options]
+[tool.pytest.ini_options]
 #addopts = """
 #    --strict-markers
 #    --cov-report term
 #    --cov-report html:htmlcov
 #    --cov-report xml
-#    --cov-fail-under=90
-#    --cov=.
+#    --cov-fail-under=0
+#    --cov=zq_django_util
 #"""
+addopts = """
+    -s -v
+"""

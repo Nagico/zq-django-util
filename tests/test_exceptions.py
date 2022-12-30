@@ -22,9 +22,9 @@ from zq_django_util.exceptions.handler import (
     ApiExceptionHandler,
     exception_handler,
 )
-from zq_django_util.exceptions.types import ApiExceptionResponse
 from zq_django_util.exceptions.views import server_error
 from zq_django_util.response import ApiResponse, ResponseType
+from zq_django_util.response.types import ApiExceptionResponse
 
 
 class ApiExceptionTestCase(TestCase):
@@ -175,12 +175,12 @@ class ApiExceptionTestCase(TestCase):
             self.assertDictEqual(response["data"], e.exception_data)
 
 
-class TestExceptionHandler(ApiExceptionHandler):
+class ExceptionHandler(ApiExceptionHandler):
     def run(self) -> Optional[ApiExceptionResponse]:
         return None
 
 
-class TestExceptHandlerBlank:
+class ExceptHandlerBlank:
     pass
 
 
@@ -236,7 +236,7 @@ class ExceptionHandlerTestCase(TestCase):
 
     @override_settings(
         ZQ_EXCEPTION={
-            "EXCEPTION_HANDLER_CLASS": "tests.test_exceptions.TestExceptionHandler"
+            "EXCEPTION_HANDLER_CLASS": "tests.test_exceptions.ExceptionHandler"
         }
     )
     def test_exception_handler_custom(self):
@@ -248,7 +248,7 @@ class ExceptionHandlerTestCase(TestCase):
 
     @override_settings(
         ZQ_EXCEPTION={
-            "EXCEPTION_HANDLER_CLASS": "tests.test_exceptions.TestExceptHandlerBlank"
+            "EXCEPTION_HANDLER_CLASS": "tests.test_exceptions.ExceptHandlerBlank"
         }
     )
     def test_exception_handler_custom_class_type_error(self):

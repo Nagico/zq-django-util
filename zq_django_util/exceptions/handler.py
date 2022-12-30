@@ -12,7 +12,7 @@ from sentry_sdk import capture_exception, set_tag, set_user
 
 from zq_django_util.exceptions import ApiException
 from zq_django_util.exceptions.configs import zq_exception_settings
-from zq_django_util.exceptions.types import ExtraHeaders
+from zq_django_util.exceptions.types import ApiExceptionResponse, ExtraHeaders
 from zq_django_util.response import ResponseType
 
 
@@ -26,7 +26,7 @@ class ApiExceptionHandler:
         self.exc = exc
         self.context = context
 
-    def run(self) -> Optional[Response]:
+    def run(self) -> Optional[ApiExceptionResponse]:
         """
         处理异常
         :return: 响应数据或失败为None
@@ -120,7 +120,10 @@ class ApiExceptionHandler:
         data["data"]["details"] = info
 
         return Response(
-            data, status=exc.response_type.status_code, headers=headers
+            data,
+            status=exc.response_type.status_code,
+            headers=headers,
+            content_type="application/json",
         )
 
     @staticmethod
@@ -224,7 +227,7 @@ class ApiExceptionHandler:
 
 def exception_handler(
     exc: Exception, context: ExceptionHandlerContext
-) -> Optional[Response]:
+) -> Optional[ApiExceptionResponse]:
     """
     自定义异常处理
 

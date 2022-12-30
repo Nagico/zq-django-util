@@ -17,7 +17,8 @@ if TYPE_CHECKING:
 class ApiException(Exception):
     """API异常"""
 
-    RECORD_MSG_TEMPLATE = "服务器开小差了，请向工作人员反馈以下内容："
+    DEFAULT_MSG = "服务器开小差了"
+    RECORD_MSG_TEMPLATE = "请向工作人员反馈以下内容："
 
     record: bool
     response_type: "ResponseType"
@@ -82,9 +83,10 @@ class ApiException(Exception):
         :return: 异常用户提示
         """
         if self.record:  # 记录异常
-            res = f"{self.RECORD_MSG_TEMPLATE}{self.eid}"  # 标准用户提示
             if msg:  # 如果有自定义异常用户提示
-                res = f"{res}, {msg}"  # 将自定义用户提示添加到末尾
+                res = f"{msg}，{self.RECORD_MSG_TEMPLATE}{self.eid}"  # 使用自定义用户提示
+            else:
+                res = f"{self.DEFAULT_MSG}，{self.RECORD_MSG_TEMPLATE}{self.eid}"  # 标准用户提示
         else:  # 不记录异常
             res = msg or self.response_type.detail  # 获取异常详情
         return res

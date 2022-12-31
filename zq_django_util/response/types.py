@@ -17,5 +17,6 @@ class ResponseData(TypedDict, total=True):
 
 
 class ApiExceptionResponse(Response):
+    api_request_data: Dict[str, JSONVal]
     exception_data: ApiException
     exception: bool

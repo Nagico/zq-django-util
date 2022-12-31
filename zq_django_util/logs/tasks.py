@@ -12,6 +12,7 @@ from django.utils import timezone
 from loguru import logger
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework_simplejwt.settings import api_settings
 
 from zq_django_util.exceptions import ApiException
 from zq_django_util.logs.configs import drf_logger_settings
@@ -27,16 +28,35 @@ from zq_django_util.response.types import ApiExceptionResponse
 class HandleLogAsync(Thread):
     def __init__(self):
         super().__init__()
+        self.flag = True
         self._queue: Queue[(Request, Response, int)] = Queue(
             maxsize=drf_logger_settings.QUEUE_MAX_SIZE
         )
 
     def run(self) -> None:
+        """
+        线程开始
+        :return:
+        """
         self.start_queue_process()
+
+    def stop(self) -> None:
+        """
+        强制结束线程
+        :return:
+        """
+        self.flag = False
 
     def prepare_request_log(
         self, request: Request, response: ApiExceptionResponse, start_time: int
     ) -> Optional[dict]:
+        """
+        处理请求日志
+        :param request:
+        :param response:
+        :param start_time:
+        :return:
+        """
         # region 检查是否需要记录日志
         if not drf_logger_settings.DATABASE and not drf_logger_settings.SIGNAL:
             return
@@ -68,51 +88,69 @@ class HandleLogAsync(Thread):
             return
 
         # endregion
-        data = self.get_request_log_data(request, response, start_time)
+        data = self.get_request_log_data(request, response, start_time)  # 解析数据
 
-        if drf_logger_settings.SIGNAL:
-            # API_LOGGER_SIGNAL.listen(**data)
+        if drf_logger_settings.SIGNAL:  # 需要发送信号
+            # TODO 使用django信号发送日志
             pass
 
-        if drf_logger_settings.DATABASE:
-            return data
+        if drf_logger_settings.DATABASE:  # 需要写入数据库
+            return data  # 返回数据
 
     def put_log_data(
         self, request: Request, response: Response, start_time: int
     ) -> None:
+        """
+        将日志数据放入队列
+        :param request:
+        :param response:
+        :param start_time:
+        :return:
+        """
         self._queue.put((request, response, start_time))
 
         if self._queue.qsize() >= drf_logger_settings.QUEUE_MAX_SIZE:
+            # 队列已满，开始处理日志
             self._start_log_parse()
 
     def start_queue_process(self):
-        while True:
-            time.sleep(drf_logger_settings.INTERVAL)
-            self._start_log_parse()
+        """
+        持续处理日志
+        :return:
+        """
+        while self.flag:
+            time.sleep(drf_logger_settings.INTERVAL)  # 睡眠
+            if self.flag:
+                self._start_log_parse()
 
     def _start_log_parse(self) -> None:
-        request_items: list[RequestLog] = []
-        exception_items: list[ExceptionLog] = []
+        """
+        开始处理日志
+        :return:
+        """
+        request_items: list[RequestLog] = []  # 请求日志
+        exception_items: list[ExceptionLog] = []  # 异常日志
         while not self._queue.empty():
             try:
                 request, response, start_time = self._queue.get()
 
+                # 存在异常信息，则为异常日志
                 if getattr(response, "exception_data", False):
                     res = self.prepare_exception_log(
                         request, response, start_time
                     )
-                    if res:
+                    if res:  # 解析后需要插入数据库
                         exception_items.append(ExceptionLog(**res))
-                else:
+                else:  # 否则只记录请求日志
                     res = self.prepare_request_log(
                         request, response, start_time
                     )
-                    if res:
+                    if res:  # 解析后需要插入数据库
                         request_items.append(RequestLog(**res))
             except Exception:
                 pass
 
-        if request_items or exception_items:
+        if request_items or exception_items:  # 有日志需要写入数据库
             self._insert_into_data_base(request_items, exception_items)
 
     def _insert_into_data_base(
@@ -120,23 +158,30 @@ class HandleLogAsync(Thread):
         request_items: list[RequestLog],
         exception_items: list[ExceptionLog],
     ) -> None:
+        """
+        写入数据库
+        :param request_items: 请求日志列表
+        :param exception_items: 异常日志列表
+        :return:
+        """
         try:
-            if request_items:
+            if request_items:  # 有请求日志
                 RequestLog.objects.using(
                     drf_logger_settings.DEFAULT_DATABASE
-                ).bulk_create(request_items)
+                ).bulk_create(
+                    request_items
+                )  # 批量插入
                 logger.debug(
                     f"insert {len(request_items)} request log into database"
                 )
-            if (
-                exception_items
-            ):  # TODO 无法直接使用bulk_create: Can't bulk create a multi-table inherited model
-                for item in exception_items:
+            if exception_items:  # 有异常日志
+                # TODO 无法直接使用bulk_create: Can't bulk create a multi-table inherited model
+                for item in exception_items:  # 逐条插入
                     item.save()
                 logger.debug(
                     f"insert {len(exception_items)} exception log into database"
                 )
-        except OperationalError:
+        except OperationalError:  # 没有相关数据库表
             raise Exception(
                 """
             DRF API LOGGER EXCEPTION
@@ -144,13 +189,23 @@ class HandleLogAsync(Thread):
             Did you forget to migrate?
             """
             )
-        except Exception as e:
+        except Exception as e:  # 其他异常
             logger.error(f"DRF API LOGGER EXCEPTION: {e}")
 
+    @classmethod
     def prepare_exception_log(
-        self, request: Request, response: ApiExceptionResponse, start_time: int
+        cls, request: Request, response: ApiExceptionResponse, start_time: int
     ) -> dict:
-        data = self.get_request_log_data(request, response, start_time)
+        """
+        解析异常记录
+        :param request: 请求
+        :param response: 响应
+        :param start_time: 开始时间
+        :return: 异常数据
+        """
+        data = cls.get_request_log_data(
+            request, response, start_time
+        )  # 获取请求日志数据
         exception_data: ApiException = response.exception_data
         data.update(
             dict(
@@ -168,18 +223,25 @@ class HandleLogAsync(Thread):
     def get_request_log_data(
         request: Request, response: ApiExceptionResponse, start_time: int
     ) -> dict:
-        # region 记录jwt
+        """
+        解析请求记录
+        :param request: 请求
+        :param response: 响应
+        :param start_time: 开始时间
+        :return:
+        """
+        # region 获取用户
         jwt = request.headers.get("authorization")
         try:
-            if jwt:
+            if jwt:  # 有jwt，解析
                 payload = jwt.split(" ")[1].split(".")[1]
                 payload = json.loads(
                     base64.b64decode(
                         payload + "=" * (-len(payload) % 4)
                     ).decode()
                 )
-                user = payload.get("user_id", None)
-            else:
+                user = payload.get(api_settings.USER_ID_CLAIM, None)
+            else:  # 无jwt，使用request内的用户
                 user = (
                     request.user.id if request.user.is_authenticated else None
                 )
@@ -194,14 +256,14 @@ class HandleLogAsync(Thread):
         file_data = {}
         try:
             for key, value in response.api_request_data.items():
-                if isinstance(value, UploadedFile):
+                if isinstance(value, UploadedFile):  # 文件
                     file_data[key] = {
                         "name": value.name,
                         "size": value.size,
                         "content_type": value.content_type,
                         "content_type_extra": value.content_type_extra,
                     }
-                else:
+                else:  # 文本数据
                     request_data[key] = value
         except Exception:
             pass
@@ -212,13 +274,13 @@ class HandleLogAsync(Thread):
         if response.get("content-type") in [
             "application/json",
             "application/vnd.api+json",
-        ]:
-            if getattr(response, "streaming", False):
+        ]:  # 只记录json格式的响应
+            if getattr(response, "streaming", False):  # 流式响应
                 response_body = {"streaming": True}
-            else:
-                if type(response.content) == bytes:
+            else:  # 文本响应
+                if type(response.content) == bytes:  # bytes类型
                     response_body = json.loads(response.content.decode())
-                else:
+                else:  # str类型
                     response_body = json.loads(response.content)
         # endregion
 

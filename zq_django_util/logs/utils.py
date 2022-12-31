@@ -3,7 +3,7 @@ import re
 from rest_framework.request import Request
 
 from zq_django_util.logs.configs import drf_logger_settings
-from zq_django_util.response import JSONVal
+from zq_django_util.response.types import JSONVal
 
 
 def get_headers(request: Request = None) -> dict[str, str]:

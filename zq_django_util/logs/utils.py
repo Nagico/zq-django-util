@@ -1,10 +1,12 @@
 import re
-from typing import Union
+
+from rest_framework.request import Request
 
 from zq_django_util.logs.configs import drf_logger_settings
+from zq_django_util.response import JSONVal
 
 
-def get_headers(request=None):
+def get_headers(request: Request = None) -> dict[str, str]:
     """
     Function:       get_headers(self, request)
     Description:    To get all the headers from request
@@ -17,7 +19,7 @@ def get_headers(request=None):
     )
 
 
-def get_client_ip(request):
+def get_client_ip(request: Request) -> str:
     try:
         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
@@ -29,15 +31,15 @@ def get_client_ip(request):
         return ""
 
 
-def is_api_logger_enabled():
+def is_api_logger_enabled() -> bool:
     return drf_logger_settings.DATABASE or drf_logger_settings.SIGNAL
 
 
-def database_log_enabled():
+def database_log_enabled() -> bool:
     return drf_logger_settings.DATABASE
 
 
-def mask_sensitive_data(data: Union[dict, list, str]) -> Union[dict, list, str]:  # type: ignore
+def mask_sensitive_data(data: JSONVal) -> JSONVal:
     """
     Hides sensitive keys specified in sensitive_keys settings.
     Loops recursively over nested dictionaries.

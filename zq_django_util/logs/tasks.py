@@ -9,7 +9,6 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.utils import OperationalError
 from django.urls import resolve
 from django.utils import timezone
-from logs import API_LOGGER_SIGNAL  # type: ignore
 from loguru import logger
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -22,6 +21,7 @@ from zq_django_util.logs.utils import (
     get_headers,
     mask_sensitive_data,
 )
+from zq_django_util.response.types import ApiExceptionResponse
 
 
 class HandleLogAsync(Thread):
@@ -35,7 +35,7 @@ class HandleLogAsync(Thread):
         self.start_queue_process()
 
     def prepare_request_log(
-        self, request: Request, response: Response, start_time: int
+        self, request: Request, response: ApiExceptionResponse, start_time: int
     ) -> Optional[dict]:
         # region 检查是否需要记录日志
         if not drf_logger_settings.DATABASE and not drf_logger_settings.SIGNAL:
@@ -71,7 +71,8 @@ class HandleLogAsync(Thread):
         data = self.get_request_log_data(request, response, start_time)
 
         if drf_logger_settings.SIGNAL:
-            API_LOGGER_SIGNAL.listen(**data)
+            # API_LOGGER_SIGNAL.listen(**data)
+            pass
 
         if drf_logger_settings.DATABASE:
             return data
@@ -147,7 +148,7 @@ class HandleLogAsync(Thread):
             logger.error(f"DRF API LOGGER EXCEPTION: {e}")
 
     def prepare_exception_log(
-        self, request: Request, response: Response, start_time: int
+        self, request: Request, response: ApiExceptionResponse, start_time: int
     ) -> dict:
         data = self.get_request_log_data(request, response, start_time)
         exception_data: ApiException = response.exception_data
@@ -165,7 +166,7 @@ class HandleLogAsync(Thread):
 
     @staticmethod
     def get_request_log_data(
-        request: Request, response: Response, start_time: int
+        request: Request, response: ApiExceptionResponse, start_time: int
     ) -> dict:
         # region 记录jwt
         jwt = request.headers.get("authorization")

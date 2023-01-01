@@ -69,6 +69,7 @@ def pytest_configure(config):
             "django.contrib.sessions",
             "django.contrib.sites",
             "django.contrib.staticfiles",
+            "django_filters",
             "rest_framework",
             "rest_framework.authtoken",
             "zq_django_util.logs",
@@ -78,7 +79,12 @@ def pytest_configure(config):
             "TEST_REQUEST_RENDERER_CLASSES": [
                 "rest_framework.renderers.MultiPartRenderer",
                 "rest_framework.renderers.JSONRenderer",
-            ]
+            ],
+            "DEFAULT_FILTER_BACKENDS": [
+                "rest_framework.filters.OrderingFilter",
+                "django_filters.rest_framework.DjangoFilterBackend",
+            ],
+            "DEFAULT_PAGINATION_CLASS": "zq_django_util.utils.pagination.GlobalPageNumberPagination",
         },
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
         AUTH_USER_MODEL="tests.User",

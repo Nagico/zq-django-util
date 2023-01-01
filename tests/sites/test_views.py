@@ -18,7 +18,7 @@ class CacheMixinTestCase(APITestCase):
                 "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             }
         },
-        ROOT_URLCONF="tests.mixins.urls",
+        ROOT_URLCONF="tests.sites.urls",
     )
     def test_list(self):
         self.assertEqual(
@@ -32,7 +32,7 @@ class CacheMixinTestCase(APITestCase):
                 "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             }
         },
-        ROOT_URLCONF="tests.mixins.urls",
+        ROOT_URLCONF="tests.sites.urls",
     )
     def test_list_with_params(self):
         self.assertEqual(
@@ -46,7 +46,7 @@ class CacheMixinTestCase(APITestCase):
                 "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             }
         },
-        ROOT_URLCONF="tests.mixins.urls",
+        ROOT_URLCONF="tests.sites.urls",
     )
     def test_retrieve(self):
         user = baker.make(User)
@@ -61,7 +61,7 @@ class CacheMixinTestCase(APITestCase):
                 "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             }
         },
-        ROOT_URLCONF="tests.mixins.urls",
+        ROOT_URLCONF="tests.sites.urls",
     )
     def test_list_no_page(self):
         self.assertEqual(

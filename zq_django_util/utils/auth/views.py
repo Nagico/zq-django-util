@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from zq_django_util.exceptions import ApiException
 from zq_django_util.response import ResponseType
 from zq_django_util.utils.auth.serializers import (
-    OpenIDLoginSerializer,
+    OpenIdLoginSerializer,
     PasswordLoginSerializer,
 )
 
@@ -19,13 +19,13 @@ if TYPE_CHECKING:
 AuthUser = get_user_model()
 
 
-class OpenIDLoginView(TokenObtainPairView):
+class OpenIdLoginView(TokenObtainPairView):
     """
     open id 登录视图（仅供测试微信登录使用）
     """
 
     queryset = AuthUser.objects.all()
-    serializer_class = OpenIDLoginSerializer
+    serializer_class = OpenIdLoginSerializer
 
     def post(self, request: "Request", *args: Any, **kwargs: Any) -> Response:
         """
@@ -36,7 +36,12 @@ class OpenIDLoginView(TokenObtainPairView):
         try:
             serializer.is_valid(raise_exception=True)
         except TokenError:
-            raise ApiException(ResponseType.ThirdLoginFailed, "微信登录失败，请稍后重试")
+            raise ApiException(
+                ResponseType.ThirdLoginFailed,
+                msg="微信登录失败",
+                detail="生成token时simple jwt发生TokenError",
+                record=True,
+            )
 
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 

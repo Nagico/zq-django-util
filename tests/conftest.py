@@ -71,11 +71,14 @@ def pytest_configure(config):
             "django.contrib.staticfiles",
             "rest_framework",
             "rest_framework.authtoken",
-            # 'tests.authentication',
-            # 'tests.generic_relations',
-            # 'tests.importable',
-            "tests",
+            "zq_django_util.logs",
         ),
+        REST_FRAMEWORK={
+            "TEST_REQUEST_RENDERER_CLASSES": [
+                "rest_framework.renderers.MultiPartRenderer",
+                "rest_framework.renderers.JSONRenderer",
+            ]
+        },
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
         **use_l10n,
     )

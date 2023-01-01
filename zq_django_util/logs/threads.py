@@ -5,7 +5,7 @@ LOGGER_THREAD = None
 if is_api_logger_enabled():
     import threading
 
-    from zq_django_util.logs.tasks import HandleLogAsync
+    from zq_django_util.logs.handler import HandleLogAsync
 
     LOG_THREAD_NAME = "log_thread"
 

@@ -70,6 +70,7 @@ class PackageSettings:
                     status_code: import_from_string(error_schema, attr)
                     for status_code, error_schema in val.items()
                 }
+            # TODO 添加list解析
             else:
                 val = perform_import(val, attr)
 

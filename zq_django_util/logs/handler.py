@@ -14,30 +14,45 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.settings import api_settings
 
+import zq_django_util
 from zq_django_util.exceptions import ApiException
 from zq_django_util.logs.configs import drf_logger_settings
 from zq_django_util.logs.models import ExceptionLog, RequestLog
+from zq_django_util.logs.types import (
+    ExceptionLogDict,
+    FileDataDict,
+    RequestLogDict,
+)
 from zq_django_util.logs.utils import (
     get_client_ip,
     get_headers,
     mask_sensitive_data,
 )
-from zq_django_util.response.types import ApiExceptionResponse
+from zq_django_util.response.types import ApiExceptionResponse, JSONVal
 
 
 class HandleLogAsync(Thread):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.flag = True
         self._queue: Queue[(Request, Response, int)] = Queue(
             maxsize=drf_logger_settings.QUEUE_MAX_SIZE
         )
+
+    def __enter__(self):
+        self.daemon = True
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
 
     def run(self) -> None:
         """
         线程开始
         :return:
         """
+        self.flag = True
         self.start_queue_process()
 
     def stop(self) -> None:
@@ -46,9 +61,13 @@ class HandleLogAsync(Thread):
         :return:
         """
         self.flag = False
+        self.join()
 
     def prepare_request_log(
-        self, request: Request, response: ApiExceptionResponse, start_time: int
+        self,
+        request: Request,
+        response: ApiExceptionResponse,
+        start_time: float,
     ) -> Optional[dict]:
         """
         处理请求日志
@@ -75,7 +94,7 @@ class HandleLogAsync(Thread):
 
         # Only log required status codes if matching
         if (
-            drf_logger_settings.STATUS_CODES
+            drf_logger_settings.STATUS_CODES is not None
             and response.status_code not in drf_logger_settings.STATUS_CODES
         ):
             return
@@ -98,7 +117,7 @@ class HandleLogAsync(Thread):
             return data  # 返回数据
 
     def put_log_data(
-        self, request: Request, response: Response, start_time: int
+        self, request: Request, response: Response, start_time: float
     ) -> None:
         """
         将日志数据放入队列
@@ -151,10 +170,10 @@ class HandleLogAsync(Thread):
                 pass
 
         if request_items or exception_items:  # 有日志需要写入数据库
-            self._insert_into_data_base(request_items, exception_items)
+            self._insert_into_database(request_items, exception_items)
 
-    def _insert_into_data_base(
-        self,
+    @staticmethod
+    def _insert_into_database(
         request_items: list[RequestLog],
         exception_items: list[ExceptionLog],
     ) -> None:
@@ -166,7 +185,7 @@ class HandleLogAsync(Thread):
         """
         try:
             if request_items:  # 有请求日志
-                RequestLog.objects.using(
+                zq_django_util.logs.models.RequestLog.objects.using(
                     drf_logger_settings.DEFAULT_DATABASE
                 ).bulk_create(
                     request_items
@@ -177,7 +196,7 @@ class HandleLogAsync(Thread):
             if exception_items:  # 有异常日志
                 # TODO 无法直接使用bulk_create: Can't bulk create a multi-table inherited model
                 for item in exception_items:  # 逐条插入
-                    item.save()
+                    item.save(using=drf_logger_settings.DEFAULT_DATABASE)
                 logger.debug(
                     f"insert {len(exception_items)} exception log into database"
                 )
@@ -194,8 +213,8 @@ class HandleLogAsync(Thread):
 
     @classmethod
     def prepare_exception_log(
-        cls, request: Request, response: ApiExceptionResponse, start_time: int
-    ) -> dict:
+        cls, request: Request, response: ApiExceptionResponse, start_time: float
+    ) -> ExceptionLogDict:
         """
         解析异常记录
         :param request: 请求
@@ -203,7 +222,7 @@ class HandleLogAsync(Thread):
         :param start_time: 开始时间
         :return: 异常数据
         """
-        data = cls.get_request_log_data(
+        data: RequestLogDict = cls.get_request_log_data(
             request, response, start_time
         )  # 获取请求日志数据
         exception_data: ApiException = response.exception_data
@@ -221,8 +240,8 @@ class HandleLogAsync(Thread):
 
     @staticmethod
     def get_request_log_data(
-        request: Request, response: ApiExceptionResponse, start_time: int
-    ) -> dict:
+        request: Request, response: ApiExceptionResponse, start_time: float
+    ) -> RequestLogDict:
         """
         解析请求记录
         :param request: 请求
@@ -240,24 +259,24 @@ class HandleLogAsync(Thread):
                         payload + "=" * (-len(payload) % 4)
                     ).decode()
                 )
-                user = payload.get(api_settings.USER_ID_CLAIM, None)
+                user_id = payload.get(api_settings.USER_ID_CLAIM, None)
             else:  # 无jwt，使用request内的用户
-                user = (
+                user_id = (
                     request.user.id if request.user.is_authenticated else None
                 )
         except Exception:
-            user = None
+            user_id = None
         # endregion
 
         # region 记录请求参数
         request_param = request.GET.dict()
 
-        request_data = {}
-        file_data = {}
+        request_data: dict[str, JSONVal] = {}
+        file_data: dict[str, FileDataDict] = {}
         try:
             for key, value in response.api_request_data.items():
                 if isinstance(value, UploadedFile):  # 文件
-                    file_data[key] = {
+                    file_data[key]: FileDataDict = {
                         "name": value.name,
                         "size": value.size,
                         "content_type": value.content_type,
@@ -271,17 +290,22 @@ class HandleLogAsync(Thread):
 
         # region 记录响应数据
         response_body = {}
-        if response.get("content-type") in [
-            "application/json",
-            "application/vnd.api+json",
-        ]:  # 只记录json格式的响应
-            if getattr(response, "streaming", False):  # 流式响应
-                response_body = {"streaming": True}
-            else:  # 文本响应
-                if type(response.content) == bytes:  # bytes类型
-                    response_body = json.loads(response.content.decode())
-                else:  # str类型
-                    response_body = json.loads(response.content)
+        try:
+            if response.get("content-type") in [
+                "application/json",
+                "application/vnd.api+json",
+            ]:  # 只记录json格式的响应
+                if getattr(response, "streaming", False):  # 流式响应
+                    response_body = {"__content__": "streaming"}
+                else:  # 文本响应
+                    if type(response.content) == bytes:  # bytes类型
+                        response_body = json.loads(response.content.decode())
+                    else:  # str类型
+                        response_body = json.loads(response.content)
+            elif "gzip" in response.get("content-type"):
+                response_body = {"__content__": "gzip file"}
+        except Exception:
+            response_body = {"__content__": "parse error"}
         # endregion
 
         # region 记录url
@@ -289,8 +313,6 @@ class HandleLogAsync(Thread):
             url = request.build_absolute_uri()
         elif drf_logger_settings.PATH_TYPE == "FULL_PATH":
             url = request.get_full_path()
-        elif drf_logger_settings.PATH_TYPE == "RAW_URI":
-            url = request.get_raw_uri()
         else:
             url = request.build_absolute_uri()
         # endregion
@@ -298,8 +320,8 @@ class HandleLogAsync(Thread):
         headers = get_headers(request=request)
         method = request.method
 
-        data = dict(
-            user=user,
+        return dict(
+            user=user_id,
             ip=get_client_ip(request),
             method=method,
             url=url,
@@ -313,5 +335,3 @@ class HandleLogAsync(Thread):
             execution_time=time.time() - start_time if start_time else None,
             create_time=timezone.now(),
         )
-
-        return data

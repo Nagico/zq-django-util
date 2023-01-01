@@ -27,7 +27,7 @@ class ApiException(Exception):
     msg: str
     event_id: Optional[str]
     inner: Optional[Exception]
-    exc_data: Optional["ExceptionInfo"]
+    _exc_data: Optional["ExceptionInfo"]
     time: datetime
 
     def __init__(
@@ -62,7 +62,7 @@ class ApiException(Exception):
         super().__init__(self.detail)
 
         self.inner = inner
-        self.exc_data = None
+        self._exc_data = None
         self.time = now()
 
     def get_exp_detail(self, detail: Optional[str]) -> str:
@@ -92,12 +92,21 @@ class ApiException(Exception):
         return res
 
     @property
+    def exc_data(self) -> "ExceptionInfo":
+        if self._exc_data is None:
+            self._exc_data = self.get_exception_info()
+        return self._exc_data
+
+    @exc_data.setter
+    def exc_data(self, value: "ExceptionInfo") -> None:
+        self._exc_data = value
+
+    @property
     def response_data(self) -> "ResponseData":
         """
         获取响应数据
         :return: 响应数据
         """
-        self.exc_data = self.get_exception_info()
         return {
             "code": self.response_type.code,
             "detail": self.detail,

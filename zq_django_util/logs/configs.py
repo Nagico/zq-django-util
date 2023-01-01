@@ -16,9 +16,11 @@ DrfLoggerSettingDict = TypedDict(
         "PATH_TYPE": str,
         "SKIP_URL_NAME": List[str],
         "SKIP_NAMESPACE": List[str],
-        "METHODS": List[str],
-        "STATUS_CODES": List[int],
+        "METHODS": List[str] | None,
+        "STATUS_CODES": List[int] | None,
         "SENSITIVE_KEYS": List[str],
+        "ADMIN_SLOW_API_ABOVE": int,  # ms
+        "ADMIN_TIMEDELTA": int,  # minute
     },
     total=True,
 )
@@ -34,11 +36,13 @@ class DrfLoggerSettings(PackageSettings):
         "DATABASE": False,
         "SIGNAL": False,
         "PATH_TYPE": "FULL_PATH",
-        "SKIP_URL_NAME": [""],
+        "SKIP_URL_NAME": [],
         "SKIP_NAMESPACE": [],
         "METHODS": None,
-        "STATUS_CODES": [],
+        "STATUS_CODES": None,
         "SENSITIVE_KEYS": ["password", "token", "access", "refresh"],
+        "ADMIN_SLOW_API_ABOVE": 500,
+        "ADMIN_TIMEDELTA": 0,
     }
 
     IMPORT_STRINGS: List[str] = []

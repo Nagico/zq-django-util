@@ -1,13 +1,17 @@
 import csv
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
-from django.conf import settings
 from django.contrib import admin
 from django.db.models import Count
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
 
 from zq_django_util.logs import models
+from zq_django_util.logs.configs import drf_logger_settings
+
+if TYPE_CHECKING:
+    from zq_django_util.logs.models import RequestLog
 
 
 @admin.register(models.ExceptionLog)
@@ -56,16 +60,17 @@ class SlowAPIsFilter(admin.SimpleListFilter):
 
     def __init__(self, request, params, model, model_admin):
         super().__init__(request, params, model, model_admin)
-        if hasattr(settings, "DRF_API_LOGGER_SLOW_API_ABOVE"):
-            if (
-                type(settings.DRF_API_LOGGER_SLOW_API_ABOVE) == int
-            ):  # Making sure for integer value.
-                # Converting to seconds.
-                self._DRF_API_LOGGER_SLOW_API_ABOVE = (
-                    settings.DRF_API_LOGGER_SLOW_API_ABOVE / 1000
-                )
+        if (
+            type(drf_logger_settings.ADMIN_SLOW_API_ABOVE) == int
+        ):  # Making sure for integer value.
+            # Converting to seconds.
+            self._DRF_API_LOGGER_SLOW_API_ABOVE = (
+                drf_logger_settings.ADMIN_SLOW_API_ABOVE / 1000
+            )
         else:
-            self._DRF_API_LOGGER_SLOW_API_ABOVE = 0.5
+            raise ValueError(
+                "DRF_LOGGER__ADMIN_SLOW_API_ABOVE must be an integer."
+            )
 
     def lookups(self, request, model_admin):
         """
@@ -75,14 +80,8 @@ class SlowAPIsFilter(admin.SimpleListFilter):
         human-readable name for the option that will appear
         in the right sidebar.
         """
-        slow = "Slow"
-        fast = "Fast"
-        if hasattr(settings, "DRF_API_LOGGER_SLOW_API_ABOVE"):
-            slow += ", >={}ms".format(settings.DRF_API_LOGGER_SLOW_API_ABOVE)
-            fast += ", <{}ms".format(settings.DRF_API_LOGGER_SLOW_API_ABOVE)
-        else:
-            slow += ", >=500ms"
-            fast += ", <500ms"
+        slow = "Slow, >={}ms".format(drf_logger_settings.ADMIN_SLOW_API_ABOVE)
+        fast = "Fast, <{}ms".format(drf_logger_settings.ADMIN_SLOW_API_ABOVE)
 
         return (
             ("slow", _(slow)),
@@ -118,17 +117,14 @@ class RequestLogAdmin(admin.ModelAdmin, ExportCsvMixin):
         self._DRF_API_LOGGER_TIMEDELTA = 0
 
         self.list_filter += (SlowAPIsFilter,)
-        if hasattr(settings, "DRF_API_LOGGER_TIMEDELTA"):
-            if (
-                type(settings.DRF_API_LOGGER_TIMEDELTA) == int
-            ):  # Making sure for integer value.
-                self._DRF_API_LOGGER_TIMEDELTA = (
-                    settings.DRF_API_LOGGER_TIMEDELTA
-                )
+        if (
+            type(drf_logger_settings.ADMIN_TIMEDELTA) == int
+        ):  # Making sure for integer value.
+            self._DRF_API_LOGGER_TIMEDELTA = drf_logger_settings.ADMIN_TIMEDELTA
 
-    def added_on_time(self, obj):
+    def added_on_time(self, obj: "RequestLog") -> str:
         return (
-            obj.added_on + timedelta(minutes=self._DRF_API_LOGGER_TIMEDELTA)
+            obj.create_time + timedelta(minutes=self._DRF_API_LOGGER_TIMEDELTA)
         ).strftime("%d %b %Y %H:%M:%S")
 
     added_on_time.admin_order_field = "create_time"
@@ -178,30 +174,20 @@ class RequestLogAdmin(admin.ModelAdmin, ExportCsvMixin):
         return response
 
     def get_queryset(self, request):
-        drf_api_logger_default_database = "default"
-        if hasattr(settings, "DRF_API_LOGGER_DEFAULT_DATABASE"):
-            drf_api_logger_default_database = (
-                settings.DRF_API_LOGGER_DEFAULT_DATABASE
-            )
         return (
             super(RequestLogAdmin, self)
             .get_queryset(request)
-            .using(drf_api_logger_default_database)
+            .using(drf_logger_settings.DEFAULT_DATABASE)
         )
 
     def changeform_view(
         self, request, object_id=None, form_url="", extra_context=None
     ):
         if request.GET.get("export", False):
-            drf_api_logger_default_database = "default"
-            if hasattr(settings, "DRF_API_LOGGER_DEFAULT_DATABASE"):
-                drf_api_logger_default_database = (
-                    settings.DRF_API_LOGGER_DEFAULT_DATABASE
-                )
             export_queryset = (
                 self.get_queryset(request)
                 .filter(pk=object_id)
-                .using(drf_api_logger_default_database)
+                .using(drf_logger_settings.DEFAULT_DATABASE)
             )
             return self.export_as_csv(request, export_queryset)
         return super(RequestLogAdmin, self).changeform_view(

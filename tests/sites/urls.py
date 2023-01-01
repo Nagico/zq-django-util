@@ -1,6 +1,6 @@
 from rest_framework import routers
 
-from tests.mixins.views import (
+from tests.sites.views import (
     TestCacheViewSet,
     TestCacheWithoutPaginationViewSet,
 )

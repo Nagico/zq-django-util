@@ -66,11 +66,7 @@ class PackageSettings:
         # Coerce import strings into classes
         if attr in self.import_strings:
             if isinstance(val, dict):
-                val = {
-                    status_code: import_from_string(error_schema, attr)
-                    for status_code, error_schema in val.items()
-                }
-            # TODO 添加list解析
+                val = {k: import_from_string(v, attr) for k, v in val.items()}
             else:
                 val = perform_import(val, attr)
 

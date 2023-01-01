@@ -1,7 +1,7 @@
 from rest_framework.viewsets import GenericViewSet
 
-from tests.mixins.serializers import UserSerializer
 from tests.models import User
+from tests.sites.serializers import UserSerializer
 from zq_django_util.utils import mixins
 
 

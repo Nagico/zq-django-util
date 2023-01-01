@@ -14,6 +14,10 @@ class AbstractTestModel(models.Model):
 
 
 class User(AbstractUser, AbstractTestModel):
+    openid = models.CharField(
+        max_length=64, unique=True, verbose_name="微信openid"
+    )
+
     class Meta:
         app_label = "tests"
         db_table = "te_user"

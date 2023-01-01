@@ -72,6 +72,7 @@ def pytest_configure(config):
             "rest_framework",
             "rest_framework.authtoken",
             "zq_django_util.logs",
+            "tests",
         ),
         REST_FRAMEWORK={
             "TEST_REQUEST_RENDERER_CLASSES": [
@@ -80,6 +81,7 @@ def pytest_configure(config):
             ]
         },
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
+        AUTH_USER_MODEL="tests.User",
         **use_l10n,
     )
 

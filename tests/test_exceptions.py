@@ -601,7 +601,7 @@ class ApiExceptionHandlerSentryTestCase(TestCase):
 
             mock_set_tag.assert_called_once_with("role", "user")
             mock_set_user.assert_called_once_with(
-                {"email": "test", "id": 1, "phone": None}
+                {"email": "test", "id": 1, "phone": ""}
             )
 
     @override_settings(

@@ -21,3 +21,4 @@ class User(AbstractUser, AbstractTestModel):
     class Meta:
         app_label = "tests"
         db_table = "te_user"
+        ordering = ["-id"]

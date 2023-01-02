@@ -10,6 +10,7 @@ from rest_framework.test import APIRequestFactory, APITestCase
 
 import zq_django_util
 from zq_django_util.utils.oss.utils import (
+    _get_pub_key_online,
     check_callback_signature,
     get_pub_key,
     get_random_name,
@@ -130,10 +131,14 @@ class CallbackUtilTestCase(APITestCase):
         self.assertIn("callback", token)
         self.assertIn("expire", token)
 
-    def test__get_pub_key_online(self):
-        url = "https://baidu.com"
-        pub_key = get_pub_key(url)
-        self.assertTrue("html" in pub_key.decode())
+    @patch("urllib.request.urlopen")
+    def test__get_pub_key_online(self, mock_urlopen: MagicMock):
+        importlib.reload(zq_django_util.utils.oss.utils)
+        mock_urlopen.return_value.read.return_value = b"pub_key"
+
+        url = "https://testserver/"
+        pub_key = _get_pub_key_online(url)
+        self.assertEqual(pub_key, b"pub_key")
 
     @override_settings(
         CACHES={

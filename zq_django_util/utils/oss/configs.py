@@ -25,7 +25,7 @@ class OssSettings(PackageSettings):
     DEFAULTS: OssSettingDict = {
         "ACCESS_KEY_ID": "",
         "ACCESS_KEY_SECRET": "",
-        "ENDPOINT": "",
+        "ENDPOINT": "https://oss-cn-shanghai.aliyuncs.com",
         "BUCKET_NAME": "",
         "URL_EXPIRE_SECOND": 60 * 60 * 24 * 30,
         "TOKEN_EXPIRE_SECOND": 60,

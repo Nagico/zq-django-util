@@ -1,6 +1,7 @@
+import logging
 import os
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from tempfile import SpooledTemporaryFile
 from typing import BinaryIO, Optional, Union
 from urllib.parse import urljoin
@@ -11,29 +12,21 @@ from django.core.exceptions import SuspiciousOperation
 from django.core.files import File
 from django.core.files.storage import Storage
 from django.utils.deconstruct import deconstructible
-from django.utils.timezone import utc
-from oss2.models import GetObjectMetaResult
 
 from .configs import oss_settings
+from .exceptions import OssError
 
 if VERSION[0] < 4:
     from django.utils.encoding import force_text
 else:
     from django.utils.encoding import force_str as force_text
 
+import oss2
 import oss2.exceptions
 import oss2.utils
-from oss2 import BUCKET_ACL_PRIVATE, Auth, Bucket, ObjectIterator, Service
+from oss2.models import GetObjectMetaResult
 
-from .defaults import logger
-
-
-class OssError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+logger = logging.getLogger("oss")
 
 
 @deconstructible
@@ -48,9 +41,9 @@ class OssStorage(Storage):
     bucket_name: str
     expire_time: int
 
-    auth: Auth
-    service: Service
-    bucket: Bucket
+    auth: oss2.Auth
+    service: oss2.Service
+    bucket: oss2.Bucket
     bucket_acl: str
 
     base_dir: str  # 基本路径
@@ -68,14 +61,14 @@ class OssStorage(Storage):
             access_key_secret or oss_settings.ACCESS_KEY_SECRET
         )
         self.end_point = self._normalize_endpoint(
-            end_point or oss_settings.END_POINT
+            end_point or oss_settings.ENDPOINT
         )
         self.bucket_name = bucket_name or oss_settings.BUCKET_NAME
-        self.expire_time = expire_time or oss_settings.EXPIRE_TIME
+        self.expire_time = expire_time or oss_settings.URL_EXPIRE_SECOND
 
-        self.auth = Auth(self.access_key_id, self.access_key_secret)
-        self.service = Service(self.auth, self.end_point)
-        self.bucket = Bucket(self.auth, self.end_point, self.bucket_name)
+        self.auth = oss2.Auth(self.access_key_id, self.access_key_secret)
+        self.service = oss2.Service(self.auth, self.end_point)
+        self.bucket = oss2.Bucket(self.auth, self.end_point, self.bucket_name)
 
         # try to get bucket acl to check bucket exist or not
         try:
@@ -115,24 +108,24 @@ class OssStorage(Storage):
         # Store filenames with forward slashes, even on Windows.
         return name.replace("\\", "/")
 
-    def _open(self, name, mode="rb"):
+    def _open(self, name: str, mode: str = "rb") -> "OssFile":
         """
         Open a file for reading from OSS.
         :param name: 文件名
         :param mode: 打开模式
         :return:
         """
-        logger().debug("name: %s, mode: %s", name, mode)
+        logger.debug("name: %s, mode: %s", name, mode)
         if mode != "rb":
             raise ValueError("OSS files can only be opened in read-only mode")
 
         target_name = self._get_key_name(name)
-        logger().debug("target name: %s", target_name)
+        logger.debug("target name: %s", target_name)
         try:
             # Load the key into a temporary file
             tmp_file = SpooledTemporaryFile(max_size=10 * 1024 * 1024)  # 10MB
             obj = self.bucket.get_object(target_name)
-            logger().info(
+            logger.info(
                 "content length: %d, requestid: %s",
                 obj.content_length,
                 obj.request_id,
@@ -152,8 +145,8 @@ class OssStorage(Storage):
 
     def _save(self, name: str, content: Union[File, bytes, str]) -> str:
         target_name = self._get_key_name(name)
-        logger().debug("target name: %s", target_name)
-        logger().debug("content: %s", content)
+        logger.debug("target name: %s", target_name)
+        logger.debug("content: %s", content)
         self.bucket.put_object(target_name, content)
         return os.path.normpath(name)
 
@@ -171,7 +164,7 @@ class OssStorage(Storage):
 
     def exists(self, name: str) -> bool:
         target_name = self._get_key_name(name)
-        logger().debug("name: %s, target name: %s", name, target_name)
+        logger.debug("name: %s, target name: %s", name, target_name)
         return self.bucket.object_exists(target_name)
 
     def get_file_meta(self, name: str) -> GetObjectMetaResult:
@@ -198,7 +191,7 @@ class OssStorage(Storage):
 
         if settings.USE_TZ:
             return datetime.utcfromtimestamp(file_meta.last_modified).replace(
-                tzinfo=utc
+                tzinfo=timezone.utc
             )
         else:
             return datetime.fromtimestamp(file_meta.last_modified)
@@ -216,19 +209,19 @@ class OssStorage(Storage):
         name = self._get_key_name(name)
         if not name.endswith("/"):
             name += "/"
-        logger().debug("name: %s", name)
+        logger.debug("name: %s", name)
 
         files: list[str] = []
         dirs: list[str] = []
 
-        for obj in ObjectIterator(self.bucket, prefix=name, delimiter="/"):
+        for obj in oss2.ObjectIterator(self.bucket, prefix=name, delimiter="/"):
             if obj.is_prefix():
                 dirs.append(obj.key)
             else:
                 files.append(obj.key)
 
-        logger().debug("dirs: %s", list(dirs))
-        logger().debug("files: %s", files)
+        logger.debug("dirs: %s", list(dirs))
+        logger.debug("files: %s", files)
         return dirs, files
 
     def url(self, name) -> str:
@@ -239,7 +232,7 @@ class OssStorage(Storage):
         """
         key = self._get_key_name(name)
         url = self.bucket.sign_url("GET", key, expires=self.expire_time)
-        if self.bucket_acl != BUCKET_ACL_PRIVATE:
+        if self.bucket_acl != oss2.BUCKET_ACL_PRIVATE:
             idx = url.find("?")
             if idx > 0:
                 url = url[:idx].replace("%2F", "/")
@@ -253,10 +246,10 @@ class OssStorage(Storage):
         :return:
         """
         name = self._get_key_name(name)
-        logger().debug("delete name: %s", name)
+        logger.debug("delete name: %s", name)
         self.bucket.delete_object(name)
 
-    def delete_with_slash(self, dirname: str) -> None:
+    def delete_dir(self, dirname: str) -> None:
         """
         删除文件夹
 
@@ -266,21 +259,21 @@ class OssStorage(Storage):
         name = self._get_key_name(dirname)
         if not name.endswith("/"):
             name += "/"
-        logger().debug("delete name: %s", name)
+        logger.debug("delete name: %s", name)
         self.bucket.delete_object(name)
 
 
 class OssMediaStorage(OssStorage):
     def __init__(self):
         self.base_dir = settings.MEDIA_URL
-        logger().debug("locatin: %s", self.location)
+        logger.debug("locatin: %s", self.base_dir)
         super(OssMediaStorage, self).__init__()
 
 
 class OssStaticStorage(OssStorage):
     def __init__(self):
         self.base_dir = settings.STATIC_URL
-        logger().info("locatin: %s", self.location)
+        logger.info("locatin: %s", self.base_dir)
         super(OssStaticStorage, self).__init__()
 
 

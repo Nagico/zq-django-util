@@ -5,7 +5,7 @@ from rest_framework.test import APITestCase
 from zq_django_util.utils.package_settings import PackageSettings
 
 
-class TestSetting(PackageSettings):
+class MockTestSetting(PackageSettings):
     setting_name = "TEST_SETTING"
     DEFAULTS = {
         "STR": "STR",
@@ -36,7 +36,7 @@ class TestSetting(PackageSettings):
     ]
 
 
-test_settings = TestSetting()
+test_settings = MockTestSetting()
 
 setting_changed.connect(test_settings.reload_package_settings)
 

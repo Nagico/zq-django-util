@@ -593,7 +593,7 @@ class HandleLogAsyncTestCase(APITestCase):
                 exception_info=exc.exc_data["info"],
                 stack_info=exc.exc_data["stack"],
             )
-            self.assertDictContainsSubset(exp_data, log_data)
+            self.assertLessEqual(exp_data.items(), log_data.items())
 
     @patch("zq_django_util.logs.models.RequestLog.objects")
     def test__insert_into_database_request_log(

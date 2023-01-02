@@ -1,6 +1,7 @@
 import base64
 import json
 import time
+from logging import getLogger
 from queue import Queue
 from threading import Thread
 from typing import Optional
@@ -9,7 +10,6 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.utils import OperationalError
 from django.urls import resolve
 from django.utils import timezone
-from loguru import logger
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.settings import api_settings
@@ -29,6 +29,8 @@ from zq_django_util.logs.utils import (
     mask_sensitive_data,
 )
 from zq_django_util.response.types import ApiExceptionResponse, JSONVal
+
+logger = getLogger("drf_logger")
 
 
 class HandleLogAsync(Thread):

@@ -621,12 +621,10 @@ class HandleLogAsyncTestCase(APITestCase):
         with self.assertRaises(Exception):
             handler._insert_into_database(request_items, [])
 
-    @patch("loguru.logger")
     @patch("zq_django_util.logs.models.RequestLog.objects")
     def test__insert_into_database_request_log_other_error(
         self,
         mock_objects: MagicMock,
-        mock_logger: MagicMock,
     ):
         mock_objects.using().bulk_create.side_effect = Exception("msg")
 
@@ -636,7 +634,6 @@ class HandleLogAsyncTestCase(APITestCase):
 
         handler = HandleLogAsync()
         handler._insert_into_database(request_items, [])
-        mock_logger.error.called_once_with("DRF API LOGGER EXCEPTION: msg")
 
     @patch.object(ExceptionLog, "save")
     def test__insert_into_database_exception_log(

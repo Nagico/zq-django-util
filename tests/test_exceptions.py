@@ -1,4 +1,6 @@
+import importlib
 import json
+import sys
 from typing import Any, Optional
 from unittest.mock import MagicMock, call, patch
 
@@ -477,7 +479,7 @@ class ApiExceptionHandlerTestCase(TestCase):
             self.assertIsNone(response.data["data"]["details"])
 
 
-class ApiExceptionHandlerSentryTestCase(TestCase):
+class ApiExceptionHandlerSentryTestCase(APITestCase):
 
     User = get_user_model()
 
@@ -499,19 +501,25 @@ class ApiExceptionHandlerSentryTestCase(TestCase):
             request=request,
         )
 
-    @patch("sentry_sdk.api.set_tag")
-    @patch("sentry_sdk.set_context")
-    @patch("sentry_sdk.api.capture_exception", return_value="event_id")
-    @patch(
-        "zq_django_util.exceptions.handler.ApiExceptionHandler.notify_sentry"
-    )
-    def test__notify_sentry(
-        self,
-        mock_notify_sentry: MagicMock,
-        mock_capture_exception: MagicMock,
-        mock_set_context: MagicMock,
-        mock_set_tag: MagicMock,
-    ):
+    @override_settings(ZQ_EXCEPTION={"SENTRY_ENABLE": True})
+    def setUp(self) -> None:
+        module = sys.modules["zq_django_util.exceptions.handler"]
+        self.mock_sentry_sdk = MagicMock(name="sentry_sdk")
+        module.sentry_sdk = self.mock_sentry_sdk
+        self.patcher_notify_sentry = patch(
+            "zq_django_util.exceptions.handler.ApiExceptionHandler.notify_sentry"
+        )
+
+    def tearDown(self) -> None:
+        patch.stopall()
+
+    def test__notify_sentry(self):
+        mock_set_tag = self.mock_sentry_sdk.api.set_tag
+        mock_notify_sentry = self.patcher_notify_sentry.start()
+        mock_set_context = self.mock_sentry_sdk.set_context
+        mock_capture_exception = self.mock_sentry_sdk.api.capture_exception
+        mock_capture_exception.return_value = "event_id"
+
         try:
             raise ApiException(ResponseType.ServerError)
         except ApiException as exc:
@@ -540,20 +548,11 @@ class ApiExceptionHandlerSentryTestCase(TestCase):
             )
             mock_capture_exception.assert_called_once_with(exc)
 
-    @patch("sentry_sdk.api.set_tag")
-    @patch("sentry_sdk.set_context")
-    @patch("sentry_sdk.api.capture_exception", return_value="event_id")
-    @patch(
-        "zq_django_util.exceptions.handler.ApiExceptionHandler.notify_sentry",
-        side_effect=Exception,
-    )
-    def test__notify_sentry_exception(
-        self,
-        mock_notify_sentry: MagicMock,
-        mock_capture_exception: MagicMock,
-        mock_set_context: MagicMock,
-        mock_set_tag: MagicMock,
-    ):
+    def test__notify_sentry_exception(self):
+        mock_notify_sentry = self.patcher_notify_sentry.start()
+        mock_notify_sentry.side_effect = Exception
+
+        mock_set_tag = self.mock_sentry_sdk.api.set_tag
         try:
             raise ApiException(ResponseType.ServerError)
         except ApiException as exc:
@@ -565,13 +564,9 @@ class ApiExceptionHandlerSentryTestCase(TestCase):
             mock_set_tag.assert_called_once()
             mock_notify_sentry.assert_called()
 
-    @patch("sentry_sdk.api.set_tag")
-    @patch("sentry_sdk.api.set_user")
-    def test_notify_sentry_anonymous(
-        self,
-        mock_set_user: MagicMock,
-        mock_set_tag: MagicMock,
-    ):
+    def test_notify_sentry_anonymous(self):
+        mock_set_user = self.mock_sentry_sdk.api.set_user
+        mock_set_tag = self.mock_sentry_sdk.api.set_tag
         try:
             raise ApiException(ResponseType.ServerError)
         except ApiException as exc:
@@ -583,13 +578,9 @@ class ApiExceptionHandlerSentryTestCase(TestCase):
             mock_set_tag.assert_called_once_with("role", "guest")
             mock_set_user.assert_not_called()
 
-    @patch("sentry_sdk.api.set_tag")
-    @patch("sentry_sdk.api.set_user")
-    def test_notify_sentry_user(
-        self,
-        mock_set_user: MagicMock,
-        mock_set_tag: MagicMock,
-    ):
+    def test_notify_sentry_user(self):
+        mock_set_user = self.mock_sentry_sdk.api.set_user
+        mock_set_tag = self.mock_sentry_sdk.api.set_tag
         user = self.User.objects.create(username="test")
         try:
             raise ApiException(ResponseType.ServerError)
@@ -604,24 +595,11 @@ class ApiExceptionHandlerSentryTestCase(TestCase):
                 {"email": "test", "id": 1, "phone": ""}
             )
 
-    @override_settings(
-        ZQ_EXCEPTION={
-            "SENTRY_ENABLE": True,
-        }
-    )
-    @patch("sentry_sdk.api.set_tag")
-    @patch("sentry_sdk.set_context")
-    @patch("sentry_sdk.api.capture_exception", return_value="event_id")
-    @patch(
-        "zq_django_util.exceptions.handler.ApiExceptionHandler.notify_sentry"
-    )
-    def test_run_with_sentry(
-        self,
-        mock_notify_sentry: MagicMock,
-        mock_capture_exception: MagicMock,
-        mock_set_context: MagicMock,
-        mock_set_tag: MagicMock,
-    ):
+    @override_settings(ZQ_EXCEPTION={"SENTRY_ENABLE": True})
+    def test_run_with_sentry(self):
+        mock_capture_exception = self.mock_sentry_sdk.api.capture_exception
+        mock_capture_exception.return_value = "event_id"
+        mock_notify_sentry = self.patcher_notify_sentry.start()
         try:
             raise ApiException(ResponseType.ServerError)
         except ApiException as exc:
@@ -631,6 +609,12 @@ class ApiExceptionHandlerSentryTestCase(TestCase):
             mock_notify_sentry.assert_called_once_with(exc, response)
             mock_capture_exception.assert_called_once_with(exc)
             self.assertEqual(response.data["data"]["event_id"], "event_id")
+
+    @override_settings(ZQ_EXCEPTION={"SENTRY_ENABLE": True})
+    def test_sentry_import(self):
+        module = sys.modules["zq_django_util.exceptions.handler"]
+        importlib.reload(module)
+        self.assertTrue(module.sentry_sdk)
 
 
 class ExceptionViewTestCase(APITestCase):

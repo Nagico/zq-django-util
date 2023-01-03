@@ -2,7 +2,6 @@ from typing import Optional, Union
 
 import django.core.exceptions as django_exceptions
 import rest_framework.exceptions as drf_exceptions
-import sentry_sdk
 from django.http import Http404
 from drf_standardized_errors.formatter import ExceptionFormatter
 from drf_standardized_errors.types import ExceptionHandlerContext
@@ -14,6 +13,9 @@ from zq_django_util.exceptions.configs import zq_exception_settings
 from zq_django_util.exceptions.types import ExtraHeaders
 from zq_django_util.response import ResponseType
 from zq_django_util.response.types import ApiExceptionResponse
+
+if zq_exception_settings.SENTRY_ENABLE:
+    import sentry_sdk
 
 
 class ApiExceptionHandler:

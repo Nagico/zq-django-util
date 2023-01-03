@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "zq_django_util"}]
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.8"
 oss2 = ">=2.13.0,<3.0"
 djangorestframework-simplejwt = ">=4.7,<6.0"
 drf-standardized-errors = ">=0.9.0,<0.13.0"
@@ -22,6 +22,7 @@ pytest-mock = ">=3.10.0,<4.0"
 model-bakery = ">=1.9.0,<2.0.0"
 importlib-metadata = "<6.0.0"
 django-filter = ">=22.1,<23.0"
+flake8-pyproject = "^1.2.2"
 
 [tool.poetry.group.dev.dependencies]
 
@@ -34,11 +35,17 @@ pytest-mock = ">=3.10.0,<4.0"
 model-bakery = ">=1.9.0,<2.0.0"
 importlib-metadata = "<6.0.0"
 django-filter = ">=22.1,<23.0"
+flake8-pyproject = "^1.2.2"
+pre-commit = "^2.21.0"
+
+[[tool.poetry.source]]
+name = "tsinghua"
+default = true
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
 
 [tool.black]
 line-length = 80
@@ -70,6 +77,12 @@ line_length = 80
 addopts = """
     -s -v
 """
+
+[tool.flake8]
+ignore = ['E203', 'E266', 'E501', 'W503']
+max-line-length = 80
+max-complexity = 18
+select = ['B', 'C', 'E', 'F', 'W', 'T4']
 
 # compatibility
 

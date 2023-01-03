@@ -1,6 +1,4 @@
 import datetime
-import importlib
-import sys
 import warnings
 from typing import Type
 from unittest.mock import MagicMock, patch
@@ -417,52 +415,3 @@ class OssFileTestCase(APITestCase):
 
         mock_storage.open.assert_called_once_with("file", "rb")
         mock_django_file_open.assert_called_once_with("rb")
-
-
-class OssBackendImportTestCase(APITestCase):
-    def setUp(self) -> None:
-        if "zq_django_util.utils.oss.backends" in sys.modules:
-            del sys.modules["zq_django_util.utils.oss.backends"]
-
-        self.django_version_patcher = patch("django.VERSION")
-
-    def tearDown(self) -> None:
-        patch.stopall()
-
-        if "zq_django_util.utils.oss.backends" in sys.modules:
-            del sys.modules["zq_django_util.utils.oss.backends"]
-        importlib.import_module("zq_django_util.utils.oss.backends")
-
-    def test_dj3_import(self):
-        version = VERSION[0]
-        self.mock_django_version = self.django_version_patcher.start()
-        self.mock_django_version.__getitem__.return_value = 3
-
-        if version < 4:  # test django 3 import under actual env of django 3
-            module = importlib.import_module(
-                "zq_django_util.utils.oss.backends"
-            )
-            self.assertEqual(
-                module.__name__, "zq_django_util.utils.oss.backends"
-            )
-        else:  # test django 3 import under actual env of django 4
-            with self.assertRaises(ImportError):
-                importlib.import_module("zq_django_util.utils.oss.backends")
-
-    def test_dj4_import(self):
-        version = VERSION[0]
-        self.mock_django_version = self.django_version_patcher.start()
-        self.mock_django_version.__getitem__.return_value = 4
-
-        if version < 4:  # test django 4 import under actual env of django 3
-            module = importlib.import_module(
-                "zq_django_util.utils.oss.backends"
-            )
-            self.assertEqual(module.force_text.__name__, "force_str")
-        else:  # test django 4 import under actual env of django 4
-            module = importlib.import_module(
-                "zq_django_util.utils.oss.backends"
-            )
-            self.assertEqual(
-                module.__name__, "zq_django_util.utils.oss.backends"
-            )

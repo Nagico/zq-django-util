@@ -6,25 +6,19 @@ from tempfile import SpooledTemporaryFile
 from typing import BinaryIO, List, Optional, Union
 from urllib.parse import urljoin
 
-from django import VERSION
+import oss2
+import oss2.exceptions
+import oss2.utils
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.core.files import File
 from django.core.files.storage import Storage
 from django.utils.deconstruct import deconstructible
+from django.utils.encoding import force_str
+from oss2.models import GetObjectMetaResult
 
 from .configs import oss_settings
 from .exceptions import OssError
-
-if VERSION[0] < 4:
-    from django.utils.encoding import force_text
-else:
-    from django.utils.encoding import force_str as force_text
-
-import oss2
-import oss2.exceptions
-import oss2.utils
-from oss2.models import GetObjectMetaResult
 
 logger = logging.getLogger("oss")
 
@@ -97,7 +91,7 @@ class OssStorage(Storage):
         # urljoin won't work if name is absolute path
         name = name.lstrip("/")
 
-        base_path = force_text(self.base_dir)
+        base_path = force_str(self.base_dir)
         final_path = urljoin(base_path + "/", name)
         name = os.path.normpath(final_path.lstrip("/"))
 

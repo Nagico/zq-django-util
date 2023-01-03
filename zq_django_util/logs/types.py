@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TypedDict, Union
+from typing import Optional, TypedDict, Union
 
 from zq_django_util.response.types import JSONVal
 
@@ -15,7 +15,7 @@ class FileDataDict(TypedDict, total=True):
 
 
 class RequestLogDict(TypedDict, total=True):
-    user: int | None
+    user: Optional[int]
     ip: str
     method: str
     url: str
@@ -26,13 +26,13 @@ class RequestLogDict(TypedDict, total=True):
     file_data: dict[str, FileDataDict]
     response: JSONVal
     status_code: int
-    execution_time: float | None
+    execution_time: Optional[float]
     create_time: datetime
 
 
 class ExceptionLogDict(RequestLogDict, total=True):
-    exp_id: str | None
-    event_id: str | None
+    exp_id: Optional[str]
+    event_id: Optional[str]
     exception_type: str
     exception_msg: str
     exception_info: str

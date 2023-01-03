@@ -1,6 +1,6 @@
 import time
 from time import sleep
-from typing import Optional
+from typing import Optional, Union
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from django.contrib.auth import get_user_model
@@ -27,7 +27,7 @@ class HandleLogAsyncTestCase(APITestCase):
     def create_context(
         self,
         url: str = "/api/",
-        user: Optional[str | User] = None,
+        user: Union[str, User, None] = None,
         token: Optional[str] = None,
         exception: Optional[Exception] = None,
         jwt: bool = False,

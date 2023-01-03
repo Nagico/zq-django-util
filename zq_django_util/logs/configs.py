@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 
 from django.core.signals import setting_changed
 from django.dispatch import receiver
@@ -16,8 +16,8 @@ DrfLoggerSettingDict = TypedDict(
         "PATH_TYPE": str,
         "SKIP_URL_NAME": List[str],
         "SKIP_NAMESPACE": List[str],
-        "METHODS": List[str] | None,
-        "STATUS_CODES": List[int] | None,
+        "METHODS": Optional[List[str]],
+        "STATUS_CODES": Optional[List[int]],
         "SENSITIVE_KEYS": List[str],
         "ADMIN_SLOW_API_ABOVE": int,  # ms
         "ADMIN_TIMEDELTA": int,  # minute

@@ -71,7 +71,7 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}-drf{{ matrix.drf-version }}-${{ hashFiles('**/poetry.lock') }}
       - name: Add Django ${{ matrix.django-version }} and DRF ${{ matrix.drf-version }}
-        run: poetry add --group test django~${{ matrix.django-version }} djangorestframework~${{ matrix.drf-version }}
+        run: poetry add --lock --group test django~${{ matrix.django-version }} djangorestframework~${{ matrix.drf-version }}
       - name: Install dependencies
         run: poetry install --with test --no-interaction --no-root
       - name: Install library

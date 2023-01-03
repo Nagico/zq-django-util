@@ -1,3 +1,6 @@
+# this file only takes effect if you run command in the `tests` folder
+# in order to support PyCharm test default config: Working directory is in the tests folder
+
 [run]
 omit =
   */migrations/*

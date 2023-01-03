@@ -1,11 +1,11 @@
 import time
+from tempfile import TemporaryFile
 from time import sleep
 from typing import Optional, Union
 from unittest.mock import MagicMock, PropertyMock, patch
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
-from django.core.files.temp import TemporaryFile
 from django.db import OperationalError
 from django.test import override_settings
 from model_bakery import baker

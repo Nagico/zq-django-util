@@ -1,12 +1,12 @@
 import datetime
 import warnings
+from tempfile import TemporaryFile
 from typing import Type
 from unittest.mock import MagicMock, patch
 
 import oss2
 from django import VERSION
 from django.core.exceptions import SuspiciousOperation
-from django.core.files.temp import TemporaryFile
 from django.test import override_settings
 from django.utils.timezone import now
 from rest_framework.test import APITestCase

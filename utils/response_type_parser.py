@@ -70,18 +70,15 @@ def get_new_content() -> list[tuple[str, str]]:
 
 def main():
     py_path = "../zq_django_util/response/__init__.py"
-    pyi_path = py_path + "i"
 
     # read
     py_st, py_ed = prepare_context(py_path)
-    pyi_st, pyi_ed = prepare_context(pyi_path)
 
     # parse
     content = get_new_content()
 
     # write
     write_file(py_path, py_st, content, py_ed)
-    write_file(pyi_path, pyi_st, content, pyi_ed)
 
 
 if __name__ == "__main__":

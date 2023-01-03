@@ -3,7 +3,7 @@ import os
 import shutil
 from datetime import datetime, timezone
 from tempfile import SpooledTemporaryFile
-from typing import BinaryIO, Optional, Union
+from typing import BinaryIO, List, Optional, Union
 from urllib.parse import urljoin
 
 from django import VERSION
@@ -203,7 +203,7 @@ class OssStorage(Storage):
         file_info = self.bucket.head_object(name)
         return file_info.content_type
 
-    def listdir(self, name: str) -> (list[str], list[str]):
+    def listdir(self, name: str) -> (List[str], List[str]):
         if name == ".":
             name = ""
         name = self._get_key_name(name)

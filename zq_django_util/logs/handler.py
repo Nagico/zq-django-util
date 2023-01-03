@@ -4,7 +4,7 @@ import time
 from logging import getLogger
 from queue import Queue
 from threading import Thread
-from typing import Optional
+from typing import Dict, List, Optional
 
 from django.core.files.uploadedfile import UploadedFile
 from django.db.utils import OperationalError
@@ -70,7 +70,7 @@ class HandleLogAsync(Thread):
         request: Request,
         response: ApiExceptionResponse,
         start_time: float,
-    ) -> Optional[dict]:
+    ) -> Optional[RequestLogDict]:
         """
         处理请求日志
         :param request:
@@ -149,8 +149,8 @@ class HandleLogAsync(Thread):
         开始处理日志
         :return:
         """
-        request_items: list[RequestLog] = []  # 请求日志
-        exception_items: list[ExceptionLog] = []  # 异常日志
+        request_items: List[RequestLog] = []  # 请求日志
+        exception_items: List[ExceptionLog] = []  # 异常日志
         while not self._queue.empty():
             try:
                 request, response, start_time = self._queue.get()
@@ -176,8 +176,8 @@ class HandleLogAsync(Thread):
 
     @staticmethod
     def _insert_into_database(
-        request_items: list[RequestLog],
-        exception_items: list[ExceptionLog],
+        request_items: List[RequestLog],
+        exception_items: List[ExceptionLog],
     ) -> None:
         """
         写入数据库
@@ -273,8 +273,8 @@ class HandleLogAsync(Thread):
         # region 记录请求参数
         request_param = request.GET.dict()
 
-        request_data: dict[str, JSONVal] = {}
-        file_data: dict[str, FileDataDict] = {}
+        request_data: Dict[str, JSONVal] = {}
+        file_data: Dict[str, FileDataDict] = {}
         try:
             for key, value in response.api_request_data.items():
                 if isinstance(value, UploadedFile):  # 文件

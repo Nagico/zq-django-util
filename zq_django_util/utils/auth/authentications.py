@@ -1,5 +1,5 @@
 # 重写 jwt 相关验证类
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -20,7 +20,7 @@ class ActiveUserAuthentication(JWTAuthentication):
         super().__init__(*args, **kwargs)
         self.user_model = self.AuthUser
 
-    def get_user(self, validated_token: dict[str, Any]) -> Optional[AuthUser]:
+    def get_user(self, validated_token: Dict[str, Any]) -> Optional[AuthUser]:
         """
         Attempts to find and return a user using the given validated token.
         """

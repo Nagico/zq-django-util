@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Optional, TypedDict
+from typing import List, Optional, TypedDict
 
 
 class ExceptionInfo(TypedDict, total=True):
     type: str
     msg: str
     info: str
-    stack: list[str]
+    stack: List[str]
 
 
 class ExceptionData(TypedDict, total=False):

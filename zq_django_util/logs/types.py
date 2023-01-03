@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Optional, TypedDict, Union
+from typing import Dict, List, Optional, TypedDict, Union
 
 from zq_django_util.response.types import JSONVal
 
-HeaderContent = Union[str, list["HeaderContent"], dict[str, "HeaderContent"]]
-HeaderDict = dict[str, HeaderContent]
+HeaderContent = Union[str, List["HeaderContent"], Dict[str, "HeaderContent"]]
+HeaderDict = Dict[str, HeaderContent]
 
 
 class FileDataDict(TypedDict, total=True):
@@ -21,9 +21,9 @@ class RequestLogDict(TypedDict, total=True):
     url: str
     headers: HeaderDict
     content_type: str
-    query_param: dict[str, JSONVal]
-    request_body: dict[str, JSONVal]
-    file_data: dict[str, FileDataDict]
+    query_param: Dict[str, JSONVal]
+    request_body: Dict[str, JSONVal]
+    file_data: Dict[str, FileDataDict]
     response: JSONVal
     status_code: int
     execution_time: Optional[float]
@@ -36,4 +36,4 @@ class ExceptionLogDict(RequestLogDict, total=True):
     exception_type: str
     exception_msg: str
     exception_info: str
-    stack_info: list[str]
+    stack_info: List[str]

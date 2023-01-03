@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 import rest_framework_simplejwt.settings
 from django.conf import settings
@@ -43,7 +43,7 @@ class OpenIdLoginSerializer(serializers.Serializer):
         # 调用 simple-jwt 中 token 生成方法, 需要在 settings 中指定 USER_ID_FIELD 为主键名
         return RefreshToken.for_user(user)
 
-    def validate(self, attrs: dict[str, Any]) -> TokenVO:
+    def validate(self, attrs: Dict[str, Any]) -> TokenVO:
         """
         重写验证器
 
@@ -82,7 +82,7 @@ class OpenIdLoginSerializer(serializers.Serializer):
 
         return data
 
-    def get_open_id(self, attrs: dict[str, Any]) -> str:
+    def get_open_id(self, attrs: Dict[str, Any]) -> str:
         """
         获取 openid
         """
@@ -112,7 +112,7 @@ class AbstractWechatLoginSerializer(OpenIdLoginSerializer):
 
         self.fields.pop("openid")  # 删除 openid 字段
 
-    def get_open_id(self, attrs: dict[str, Any]) -> str:
+    def get_open_id(self, attrs: Dict[str, Any]) -> str:
         """
         重写获取 open_id 方法
         """
@@ -120,7 +120,7 @@ class AbstractWechatLoginSerializer(OpenIdLoginSerializer):
 
 
 class PasswordLoginSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs: dict[str, Any]) -> TokenVO:
+    def validate(self, attrs: Dict[str, Any]) -> TokenVO:
         data: TokenVO = super().validate(attrs)
         user_id_field = (
             rest_framework_simplejwt.settings.api_settings.USER_ID_FIELD

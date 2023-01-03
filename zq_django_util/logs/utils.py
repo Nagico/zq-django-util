@@ -1,4 +1,5 @@
 import re
+from typing import Dict
 
 from rest_framework.request import Request
 
@@ -6,7 +7,7 @@ from zq_django_util.logs.configs import drf_logger_settings
 from zq_django_util.response.types import JSONVal
 
 
-def get_headers(request: Request = None) -> dict[str, str]:
+def get_headers(request: Request = None) -> Dict[str, str]:
     """
     Function:       get_headers(self, request)
     Description:    To get all the headers from request

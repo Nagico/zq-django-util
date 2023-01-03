@@ -5,7 +5,7 @@ import hmac
 import json
 import random
 import time
-from typing import AnyStr, Optional, Tuple, TypedDict
+from typing import AnyStr, Dict, Optional, Tuple, TypedDict
 from urllib.parse import unquote
 from urllib.request import urlopen
 
@@ -75,7 +75,7 @@ def get_random_name(file_name: str) -> str:
 
 def get_token(
     key: str,
-    callback: dict[str, str],
+    callback: Dict[str, str],
     policy: Optional[JSONValue] = None,
 ) -> OSSCallbackToken:
     """

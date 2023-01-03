@@ -1419,4 +1419,4 @@ sentry = []
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8"
-content-hash = "ce790cf57b10f11b0d0b1904298461614adbeb62d9258775f5081fb360a3cf97"
+content-hash = "3eb8bde596f14d6db9edca26d76afaedb49175b4632b15d77013ee74e89f6702"

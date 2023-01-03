@@ -1,9 +1,0 @@
-# we are only ever declaring our dependencies in one place.
-
-tox>=4.1.2,<5.0.0
-django>=3.2,<5.0
-djangorestframework>=3.12,<4.0
-
--r requirements/requirements-optionals.txt
--r requirements/requirements-testing.txt
--r requirements/requirements-packaging.txt

@@ -1,5 +1,7 @@
+import datetime
 import importlib
 import sys
+import warnings
 from typing import Type
 from unittest.mock import MagicMock, patch
 
@@ -230,9 +232,21 @@ class OssStorageTestCase(APITestCase):
         self.assertEqual(
             self.storage.get_modified_time("file").timestamp(), time.timestamp()
         )
-        self.assertEqual(
-            self.storage.get_modified_time("file").tzinfo, time.tzinfo
-        )
+        if VERSION[0] < 4:  # < django 4.0: use pytz
+            warnings.warn(
+                """Support for using pytz will be removed in Django 5.0.
+            see: https://docs.djangoproject.com/en/4.1/ref/settings/#use-deprecated-pytz
+            """,
+                DeprecationWarning,
+            )
+            self.assertEqual(
+                self.storage.get_modified_time("file").tzinfo,
+                datetime.timezone.utc,
+            )
+        else:  # >= django 4.0: use datetime.zoneinfo
+            self.assertEqual(
+                self.storage.get_modified_time("file").tzinfo, time.tzinfo
+            )
 
     @override_settings(USE_TZ=False)
     @patch("zq_django_util.utils.oss.backends.OssStorage.get_file_meta")
@@ -441,8 +455,10 @@ class OssBackendImportTestCase(APITestCase):
         self.mock_django_version.__getitem__.return_value = 4
 
         if version < 4:  # test django 4 import under actual env of django 3
-            with self.assertRaises(ImportError):
-                importlib.import_module("zq_django_util.utils.oss.backends")
+            module = importlib.import_module(
+                "zq_django_util.utils.oss.backends"
+            )
+            self.assertEqual(module.force_text.__name__, "force_str")
         else:  # test django 4 import under actual env of django 4
             module = importlib.import_module(
                 "zq_django_util.utils.oss.backends"

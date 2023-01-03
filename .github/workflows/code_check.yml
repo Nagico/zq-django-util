@@ -29,7 +29,7 @@ jobs:
       run:
         shell: bash
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ "ubuntu-latest", "windows-latest" ]
         python-version: [ "3.8", "3.9", "3.10", "3.11" ]
@@ -73,9 +73,9 @@ jobs:
       - name: Add Django ${{ matrix.django-version }} and DRF ${{ matrix.drf-version }}
         run: poetry add --lock --group test django~${{ matrix.django-version }} djangorestframework~${{ matrix.drf-version }}
       - name: Install dependencies
-        run: poetry install --with test --no-interaction --no-root
+        run: poetry install --without dev --no-interaction --no-root
       - name: Install library
-        run: poetry install --with test --no-interaction
+        run: poetry install --without dev --no-interaction
       - name: Run tests
         run: |
           source $VENV

@@ -143,6 +143,10 @@ def publish():
 
     # upload to pypi
     if ask_confirm("Publish on Pypi?"):
+        subprocess.run(
+            ["poetry", "config", "pypi-token.pypi", os.environ["PYPI_TOKEN"]],
+            check=True,
+        )
         subprocess.run(["poetry", "build"], check=True)
         subprocess.run(["poetry", "publish"], check=True)
 
@@ -150,7 +154,9 @@ def publish():
     if ask_confirm("Create github release?"):
         response = requests.post(
             f"{GITHUB_API_ENDPOINT}/releases",
-            auth=f"Bearer: {os.environ['GITHUB_TOKEN']}",
+            headers={
+                "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
+            },
             json={
                 "tag_name": f"v{version}",
                 "target_commitish": "master",

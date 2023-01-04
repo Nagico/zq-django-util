@@ -62,37 +62,71 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: poetry
+
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-py${{ matrix.python-version }}
 
       - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
 
-      - name: Load cached venv
+      - name: Backup poetry.lock
+        run: cp poetry.lock poetry.lock.bak
+
+      - name: Load cached lockfile
+        id: cached-lockfile
+        uses: actions/cache@v3
+        with:
+          path: poetry.lock
+          key: lock-${{ runner.os }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}-drf${{ matrix.drf-version }}-${{ hashFiles('poetry.lock.bak') }}
+
+      - name: Add Django ${{ matrix.django-version }} and DRF ${{ matrix.drf-version }}
+        if: steps.cached-lockfile.outputs.cache-hit != 'true'
+        run: poetry add --lock --group test django~${{ matrix.django-version }} djangorestframework~${{ matrix.drf-version }}
+
+      - name: Load cached lockfile
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
           path: .venv
-          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}-drf{{ matrix.drf-version }}-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Add Django ${{ matrix.django-version }} and DRF ${{ matrix.drf-version }}
-        run: poetry add --lock --group test django~${{ matrix.django-version }} djangorestframework~${{ matrix.drf-version }}
+          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}-drf${{ matrix.drf-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            venv-${{ runner.os }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}-drf${{ matrix.drf-version }}-
+            venv-${{ runner.os }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}-
+            venv-${{ runner.os }}-py${{ matrix.python-version }}-
 
       - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: poetry install --without dev --no-interaction --no-root
 
       - name: Install library
         run: poetry install --without dev --no-interaction
 
-      - name: Fix sqlite.dll for python < 3.9 on Windows
-        if: ${{ matrix.python-version < '3.9' }} && ${{ matrix.os == 'windows-latest' }}
+      - name: Load cached sqlite.dll for python = 3.8 on Windows
+        if: ${{ matrix.python-version = '3.8' }} && ${{ matrix.os == 'windows-latest' }}
+        id: cached-sqlite-dll
+        uses: actions/cache@v3
+        with:
+          path: .venv\DDLs\sqlite3.dll
+          key: sqlite-dll-windows
+
+      - name: Fix sqlite.dll for python = 3.8 on Windows
+        if: ${{ matrix.python-version = '3.8' }} && ${{ matrix.os == 'windows-latest' }} && ${{ steps.cached-sqlite-dll.outputs.cache-hit != 'true' }}
         run: |
           source $VENV
           set PYTHONIOENCODING=utf-8
           set PYTHONLEGACYWINDOWSSTDIO=utf-8
           python utils/windows_sqlite_fix/__init__.py
+          cp sqlite3.dll .venv\DDLs\sqlite3.dll
 
       - name: Run tests
         run: |

@@ -1,7 +1,5 @@
 import os
-import shutil
 import sys
-from pathlib import Path
 
 import colorama
 import requests
@@ -94,14 +92,7 @@ def check_fix(force: bool = False) -> bool:
 
 
 if __name__ == "__main__":
-    if not check_fix(True):
+    if not check_fix():
         print("No need to fix sqlite, exit...")
         exit(0)
     get_dll()
-    python_dir = Path(sys.executable).parent
-    dll_dir = python_dir / "DLLs"
-    if not dll_dir.exists():
-        dll_dir.mkdir()
-
-    dll_path = dll_dir / "sqlite3.dll"
-    shutil.copy("sqlite3.dll", dll_path)

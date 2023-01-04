@@ -69,7 +69,7 @@ def get_new_content() -> list[tuple[str, str]]:
 
 
 def main():
-    py_path = "../zq_django_util/response/__init__.py"
+    py_path = "../../zq_django_util/response/__init__.py"
 
     # read
     py_st, py_ed = prepare_context(py_path)

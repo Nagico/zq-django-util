@@ -13,13 +13,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8 flake8-pyproject
+
       - name: Lint with flake8
         run: |
           flake8 . --count --statistics
@@ -53,33 +56,49 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
+
       - name: Set up python ${{ matrix.python-version }}
         id: setup-python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
+
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
           path: .venv
           key: venv-${{ runner.os }}-py${{ matrix.python-version }}-dj${{ matrix.django-version }}-drf{{ matrix.drf-version }}-${{ hashFiles('**/poetry.lock') }}
+
       - name: Add Django ${{ matrix.django-version }} and DRF ${{ matrix.drf-version }}
         run: poetry add --lock --group test django~${{ matrix.django-version }} djangorestframework~${{ matrix.drf-version }}
+
       - name: Install dependencies
         run: poetry install --without dev --no-interaction --no-root
+
       - name: Install library
         run: poetry install --without dev --no-interaction
+
+      - name: Fix sqlite.dll for python < 3.9 on Windows
+        if: ${{ matrix.python-version < '3.9' }} && ${{ matrix.os == 'windows-latest' }}
+        run: |
+          source $VENV
+          set PYTHONIOENCODING=utf-8
+          set PYTHONLEGACYWINDOWSSTDIO=utf-8
+          python utils/windows_sqlite_fix/__init__.py
+
       - name: Run tests
         run: |
           source $VENV
           python runtests.py --coverage
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:

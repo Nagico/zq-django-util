@@ -45,6 +45,8 @@ jobs:
             django-version: "4.0"
           - python-version: "3.10"
             django-version: "3.2"
+          - os: "windows-latest"
+            python-version: "3.8"
     env:
       OS: ${{ matrix.os }}
       PYTHON: ${{ matrix.python-version }}
@@ -109,23 +111,6 @@ jobs:
 
       - name: Install library
         run: poetry install --without dev --no-interaction
-
-      - name: Load cached sqlite.dll for python = 3.8 on Windows
-        if: matrix.python-version == '3.8' && matrix.os == 'windows-latest'
-        id: cached-sqlite-dll
-        uses: actions/cache@v3
-        with:
-          path: .venv\DDLs\sqlite3.dll
-          key: sqlite-dll-windows
-
-      - name: Fix sqlite.dll for python = 3.8 on Windows
-        if: matrix.python-version == '3.8' && matrix.os == 'windows-latest' && steps.cached-sqlite-dll.outputs.cache-hit != 'true'
-        run: |
-          source $VENV
-          set PYTHONIOENCODING=utf-8
-          set PYTHONLEGACYWINDOWSSTDIO=utf-8
-          python utils/windows_sqlite_fix/__init__.py
-          cp sqlite3.dll .venv\DDLs\sqlite3.dll
 
       - name: Run tests
         run: |

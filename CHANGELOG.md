@@ -1,0 +1,69 @@
+# Changelog
+
+## v0.1.0 (2023-01-04)
+
+#### New Features
+
+* (actions): 添加缓存优化
+* 移除django3.2 drf3.12支持
+* 添加poetry hook检查
+* (oss): 取消django3.x中使用force_text
+* (flake8): 使用pyproject配置
+* 添加poetry支持
+* (log): 取消日志记录强制安装sentry
+* (test): 规范测试流程
+* (user): 添加user默认排序
+* (test): 添加PackageSettings单测
+* (test): 添加测试默认用户类
+* (log): 添加handler注释
+* (log): 添加类型推断
+* (log): 日志移除信号
+* (exception): 更新记录异常时的msg提示
+* (exception): 添加zq_exception配置
+* (exception): 添加Api异常类测试
+* (test): 添加测试模板
+* (exception): 添加字符串模板
+* (exception): 异常record参数覆盖'500状态码强制记录'
+* (response): 响应类使用property替代方法
+* 完善类型支持
+* (exception): 异常生成工具支持pyi
+* (exception): 更新异常内容
+* 自动代码格式化
+* 添加基础工具
+#### Fixes
+
+* (actions): 取消poetry cache
+* (actions): poetry重复安装 设定config
+* (actions): 取消python3.8 win测试
+* (actions): 修复sqlite检测
+* (actions): 取消自动poetry缓存
+* (actions): 修复python版本判断
+* (actions): python3.8 win下sqlite兼容json field
+* 测试环境添加sentry-sdk
+* (actions): 安装特殊版本依赖时只修改lock文件
+* (actions): 使用test依赖进行测试
+* (actions): 修复poetry依赖安装
+* (actions): 修复python版本
+* 兼容python3.8
+* 兼容python3.9
+* (response): 移除pyi支持
+* (permission): 删除权限工具
+* (exception): sentry调用兼容mock
+* (response): 修复404界面
+* (response): 修复property使用
+* (exception): 定义异常Response类型
+* (settings): 更新settings文件名字避免导入时与django重复
+* (settings): 修复package setting重新加载设置的异常
+* (exception): 修复反射时子类的判断
+* (exception): 修复handler状态码获取
+* 修复typing check时的循环导入
+* (wechat): 删除微信相关util
+#### Others
+
+* 使用poetry管理, 合并其他配置
+* (actions): 升级codecov版本
+* 测试所有版本
+* 添加github actions自动测试
+* mit协议
+* 添加flake8检测
+* 格式化代码

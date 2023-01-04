@@ -111,7 +111,7 @@ jobs:
         run: poetry install --without dev --no-interaction
 
       - name: Load cached sqlite.dll for python = 3.8 on Windows
-        if: ${{ matrix.python-version == '3.8' }} && ${{ matrix.os == 'windows-latest' }}
+        if: matrix.python-version == '3.8' && matrix.os == 'windows-latest'
         id: cached-sqlite-dll
         uses: actions/cache@v3
         with:
@@ -119,7 +119,7 @@ jobs:
           key: sqlite-dll-windows
 
       - name: Fix sqlite.dll for python = 3.8 on Windows
-        if: ${{ matrix.python-version == '3.8' }} && ${{ matrix.os == 'windows-latest' }} && ${{ steps.cached-sqlite-dll.outputs.cache-hit != 'true' }}
+        if: matrix.python-version == '3.8' && matrix.os == 'windows-latest' && steps.cached-sqlite-dll.outputs.cache-hit != 'true'
         run: |
           source $VENV
           set PYTHONIOENCODING=utf-8

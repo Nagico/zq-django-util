@@ -92,7 +92,7 @@ def check_fix(force: bool = False) -> bool:
 
 
 if __name__ == "__main__":
-    if not check_fix():
+    if not check_fix(True):
         print("No need to fix sqlite, exit...")
         exit(0)
     get_dll()

@@ -1,4 +1,4 @@
-# zq-django-util 开发文档
+# zq-django-util 文档
 
 ## 简介
 

@@ -1,1 +1,16 @@
-site_name: Ziqiang Studio Django Util Docs
+site_name: zq-django-util 文档
+theme:
+  name: readthedocs
+  highlightjs: true
+
+plugins:
+  - include-markdown
+  - search
+  - mkdocstrings:
+      handlers:
+        # See: https://mkdocstrings.github.io/python/usage/
+        python:
+          options:
+            docstring_style: sphinx
+markdown_extensions:
+  - admonition

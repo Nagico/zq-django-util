@@ -2,7 +2,7 @@
 
 ## 配置
 
-1. 将 `REST_FRAMWORK__EXCEPTION_HANDLER` 设置为 `zq_django_util.exceptions.handler.exception_handler`，
+1.将 `REST_FRAMWORK__EXCEPTION_HANDLER` 设置为 `zq_django_util.exceptions.handler.exception_handler`，
 
 将 `zq_django_util.response.renderers.CustomRenderer` 添加到 `DEFAULT_RENDERER_CLASSES` 首位：
 
@@ -18,7 +18,8 @@ REST_FRAMEWORK = {
 }
 ```
 
-2. 将 `drf_standardized_errors`、`zq_django_util.logs` 添加到 `INSTALLED_APPS` 中：
+2.将 `drf_standardized_errors`、`zq_django_util.logs` 添加到 `INSTALLED_APPS` 中：
+
 ```python
 INSTALLED_APPS = [
     ...,
@@ -27,7 +28,8 @@ INSTALLED_APPS = [
 ]
 ```
 
-3. 将 `zq_django_util.logs.middleware.APILoggerMiddleware` 添加到 `MIDDLEWARE` 中：
+3.将 `zq_django_util.logs.middleware.APILoggerMiddleware` 添加到 `MIDDLEWARE` 中：
+
 ```python
 MIDDLEWARE = [
     ...,
@@ -35,7 +37,8 @@ MIDDLEWARE = [
 ]
 ```
 
-4. 在 `ROOT_URLCONF` 中设置：
+4.在 `ROOT_URLCONF` 中设置：
+
 ```python
 handler404 = "zq_django_util.exceptions.views.bad_request"
 handler500 = "zq_django_util.exceptions.views.server_error"
@@ -52,6 +55,7 @@ SENTRY_ENABLE = True/False
 #### ZQ_EXCEPTION 异常配置
 
 默认值：
+
 ```python
 ZQ_EXCEPTION = {
     "EXCEPTION_UNKNOWN_HANDLE": True,
@@ -62,6 +66,7 @@ ZQ_EXCEPTION = {
 - `EXCEPTION_UNKNOWN_HANDLE` 是否处理未知异常
 
   若需便于调试，可以与 DEBUG 的值相反
+
 - `EXCEPTION_HANDLER_CLASS` exception_handler 中使用的类
 
   默认为 `ApiExceptionHandler`，可以重写 `notify_sentry` 方法，自定义 sentry 通知内容
@@ -69,6 +74,7 @@ ZQ_EXCEPTION = {
 #### DRF_LOGGER 日志配置
 
 默认值：
+
 ```python
 DRF_LOGGER = {
     "DEFAULT_DATABASE": "default",
@@ -87,44 +93,54 @@ DRF_LOGGER = {
 ```
 
 - `DEFAULT_DATABASE` 写入的数据库
+
 - `QUEUE_MAX_SIZE` 批量写入等待时的最大队列长度
 
   待解析日志数量超过当前值时，将批量解析并插入数据库
+
 - `INTERVAL` 批量写入等待间隔
 
   超过当前时间间隔后将开始批量解析队列中的日志并插入数据库
+
 - `DATABASE` 是否启用本地数据库记录
+
 - `PATH_TYPE` 记录 url 类型
 
   `FULL_PATH`: 域名后面的所有内容，如 `/test/?foo=bar`
 
   `RAW_URI`: 原始 url，如 `http://testsetver/test/?foo=bar`
+
 - `SKIP_URL_NAME` 跳过记录的 url name
 
   对应 drf 中的路径，注册 viewset 时指定 `basename`：
-  ```python
-  router.register("api", APIRootViewSet, basename="test")
-  ```
+
+```python
+router.register("api", APIRootViewSet, basename="test")
+```
   method 是视图集中的方法（默认：list, retrieve, update, delete；以及自定义 action 装饰器下的方法名）
 
   则对应的 url name 为 `{basename}-{method}`
+
 - `SKIP_NAMESPACE` 跳过记录的 namespace
 
   在 include 时定义 `namespace`：
-  ```python
-  path(
-        "test/",
-        include("tests.urls", namespace="namespace"),
-    ),
-  ```
+
+```python
+path(
+      "test/",
+      include("tests.urls", namespace="namespace"),
+  ),
+```
 
   其中 `__debug__`（django debug toolbar）与 `admin`（后台界面）始终跳过
+
 - `METHODS` 需要记录的方法
 
   可选：
-  ```python
-  ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTION"]
-  ```
+
+```python
+["GET", "POST", "PUT", "PATCH", "DELETE", "OPTION"]
+```
   当为空列表时，则全部都不记录；当为 None 时，则全部记录
 
 - `STATUS_CODES` 需要记录的状态码
@@ -142,6 +158,7 @@ DRF_LOGGER = {
 ## 响应
 
 全局响应将会做以下包装：
+
 ```python
 from zq_django_util.response.types import JSONVal
 
@@ -162,6 +179,7 @@ class ResponseData:
 在代码编写中也可以抛出 `ApiException` 以获得对应的异常响应
 
 例如：
+
 ```python
 from zq_django_util.exceptions import ApiException
 from zq_django_util.response import ResponseType
@@ -180,7 +198,8 @@ except Exception as e:
     )
 ```
 响应：
-```json5
+
+```json
 {
   "code": "A0430",
   "detail": "detail: 参数错误, 72580e",
@@ -196,9 +215,7 @@ except Exception as e:
         // 异常详情 从异常context中获得
         "info": "Traceback (most recent call last):\n  File \"...views.py\", line 145, in api_exception\n    0 / 0\nZeroDivisionError: division by zero\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"...views.py\", line 506, in dispatch\n    response = handler(request, *args, **kwargs)\n  File \"...views.py\", line 147, in api_exception\n    raise ApiException(\nzq_django_util.exceptions.ApiException: detail: 参数错误, 72580e\n",
         // 完整异常调用栈 从异常context中获得
-        "stack": [
-          ...,
-        ]
+        "stack": []
     },
     "details": "division by zero",  // 内部异常详情
     "event_id": null  // sentry 事件 id，未开启 sentry 则为 null
@@ -213,33 +230,34 @@ except Exception as e:
 - 处理未知异常，则将其转化为 ServerError
 
   响应：
-  ```json5
-  {
-    "code": "B0000",
-    "detail": "系统执行出错, b78bfd",
-    "msg": "服务器开小差了，请向工作人员反馈以下内容：b78bfd",
-    "data": {
-      "eid": "b78bfd",
-      "time": "2023-01-05T06:55:33.655749Z",
-      "exception": {
-        "type": "<class 'ZeroDivisionError'>",
-        "msg": "division by zero",
-        "info": "...",
-        "stack": [...]
-      },
-      "details": {
-          "type": "server_error",
-          "errors": [
-              {
-                  "code": "error",
-                  "detail": "division by zero",
-                  "attr": null
-              }
-          ]
-      },
-      "event_id": null
-    }
+
+```json
+{
+  "code": "B0000",
+  "detail": "系统执行出错, b78bfd",
+  "msg": "服务器开小差了，请向工作人员反馈以下内容：b78bfd",
+  "data": {
+    "eid": "b78bfd",
+    "time": "2023-01-05T06:55:33.655749Z",
+    "exception": {
+      "type": "<class 'ZeroDivisionError'>",
+      "msg": "division by zero",
+      "info": "...",
+      "stack": []
+    },
+    "details": {
+        "type": "server_error",
+        "errors": [
+            {
+                "code": "error",
+                "detail": "division by zero",
+                "attr": null
+            }
+        ]
+    },
+    "event_id": null
   }
-  ```
+}
+```
 
 - 不处理未知异常，则交给 Django 处理（可用于 DEBUG 时的显示异常详情界面）

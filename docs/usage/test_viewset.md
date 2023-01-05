@@ -1,6 +1,7 @@
 # 测试视图集
 
 ## 配置
+
 APIRootViewSet 可以提供一个测试界面，将其配置到 `urls.py` 内，即可访问。
 
 ## 响应
@@ -8,7 +9,8 @@ APIRootViewSet 可以提供一个测试界面，将其配置到 `urls.py` 内，
 其响应结果如下（已开启标准异常与响应处理）：
 
 - 匿名用户响应
-```json5
+
+```json
 {
   "code": "00000",
   "detail": "",
@@ -26,7 +28,8 @@ APIRootViewSet 可以提供一个测试界面，将其配置到 `urls.py` 内，
 ```
 
 - 普通用户响应
-```json5
+
+```json
 {
   "code": "00000",
   "detail": "",

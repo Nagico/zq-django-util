@@ -6,7 +6,7 @@ authors = ["Nagico <yjr888@vip.qq.com>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/Nagico/zq-django-util"
-documentation = "https://github.com/Nagico/zq-django-util/tree/master/docs"
+documentation = "https://zq-django-util.readthedocs.io/en/latest/"
 keywords = ["django", "drf", "util"]
 packages = [{include = "zq_django_util"}]
 
@@ -40,6 +40,7 @@ pre-commit = "^2.21.0"
 sentry-sdk = "^1.9.10"
 auto-changelog = "^0.6.0"
 mkdocs = "^1.4.2"
+mkdocstrings = {extras = ["python"], version = "^0.19.1"}
 
 [tool.poetry.extras]
 sentry = ["sentry-sdk"]

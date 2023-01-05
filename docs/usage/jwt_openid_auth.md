@@ -3,6 +3,7 @@
 ## 配置
 
 将 `rest_framework_simplejwt` 添加到 `INSTALLED_APPS` 中：
+
 ```python
 INSTALLED_APPS = [
     ...,
@@ -15,6 +16,7 @@ INSTALLED_APPS = [
 ## 自定义配置
 
 根据 [SimpleJWT](https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html) 的文档进行配置：
+
 ```python
 import datetime
 
@@ -36,11 +38,13 @@ SIMPLE_JWT = {
 在 `zq_django_util.utils.auth.views` 下有：
 
 - `OpenIdLoginView` 用于 OpenId 认证，使用 `OpenIdLoginSerializer`
+
 - `PasswordLoginView` 用于用户名-密码认证，使用 `PasswordLoginSerializer`
 
 ### 认证序列化器
 
 该序列化器用于统一返回 Token 格式，包括：
+
 ```python
 class TokenVO:
     id: int
@@ -54,9 +58,11 @@ class TokenVO:
 - `OpenIdLoginSerializer` OpenId 登录序列化器
 
   调用 `OpenIdBackend` 认证后端，并在 OpenId 未绑定时抛出 `ThirdLoginFailed` 类型的 `ApiException`。
+
 - `AbstractWechatLoginSerializer` 微信登录序列化器
 
   需要重写 `get_open_id` 方法，将 `code` 转化为 `openid` 返回
+
 - `PasswordLoginSerializer` 用户名密码登录序列化器
 
   修改自 `TokenObtainPairSerializer`
@@ -74,6 +80,7 @@ class TokenVO:
 在 `zq_django_util.utils.auth.authentications` 下有认证方式相关的类：
 
 - `ActiveUserAuthentication` 允许激活的用户通过jwt登录
+
 - `NormalUserAuthentication`  允许所有用户通过jwt登录
 
 ### 全局配置

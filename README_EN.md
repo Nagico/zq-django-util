@@ -10,6 +10,9 @@
   <a href="https://github.com/Nagico/zq-django-util/actions/workflows/code_check.yml">
     <img src="https://github.com/Nagico/zq-django-util/actions/workflows/code_check.yml/badge.svg" alt="CI">
   </a>
+  <a href="https://zq-django-util.readthedocs.io/en/latest/">
+    <img src="https://readthedocs.org/projects/zq-django-util/badge/?version=latest" alt="Documentation Status" />
+  </a>
   <a href="https://codecov.io/gh/Nagico/zq-django-util" >
     <img src="https://codecov.io/gh/Nagico/zq-django-util/branch/master/graph/badge.svg" alt="cov"/>
   </a>
@@ -28,6 +31,8 @@
 - Aliyun OSS Storage and upload directly in client
 - Default pagination class
 - Test ViewSet
+
+Docs: [zq-django-util.readthedocs.io](https://zq-django-util.readthedocs.io/)
 
 ## Requirements
 

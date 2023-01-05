@@ -10,6 +10,9 @@
   <a href="https://github.com/Nagico/zq-django-util/actions/workflows/code_check.yml">
     <img src="https://github.com/Nagico/zq-django-util/actions/workflows/code_check.yml/badge.svg" alt="CI">
   </a>
+  <a href="https://zq-django-util.readthedocs.io/en/latest/?badge=latest">
+    <img src="https://readthedocs.org/projects/zq-django-util/badge/?version=latest" alt="Documentation Status" />
+  </a>
   <a href="https://codecov.io/gh/Nagico/zq-django-util" >
     <img src="https://codecov.io/gh/Nagico/zq-django-util/branch/master/graph/badge.svg" alt="cov"/>
   </a>
@@ -30,6 +33,8 @@ zq-django-util 是用于辅助搭建 django-drf 应用的工具集合，其中�
 - oss 存储与直传
 - 默认分页类
 - 测试 ViewSet
+
+详细文档：[zq-django-util.readthedocs.io](https://zq-django-util.readthedocs.io/)
 
 ## 依赖需求
 

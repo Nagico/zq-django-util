@@ -19,6 +19,8 @@
 </p>
 <!-- markdownlint-enable MD033 -->
 
+[English Version](README_EN.md)
+
 ## 简介
 
 zq-django-util 是用于辅助搭建 django-drf 应用的工具集合，其中包含：

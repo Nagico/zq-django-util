@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.1.1 (2023-01-05)
+
+#### New Features
+
+* 添加 conventional commit 检测
+#### Fixes
+
+* (exception): 修复sentry通知检测
+* (exception): 修复未知异常处理
+* (exception): 修复异常记录时null字段
+* (exception): 修复异常处理返回类型
+* 更新github release发布
+* (actions): 减少单测数量
+#### Docs
+
+* 更新readme
+* 更新文档
+
+Full set of changes: [`v0.1.0...v0.1.1`](https://github.com/Nagico/zq-django-util/compare/v0.1.0...v0.1.1)
+
 ## v0.1.0 (2023-01-04)
 
 #### New Features

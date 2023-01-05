@@ -1,10 +1,13 @@
 [tool.poetry]
 name = "zq-django-util"
-version = "0.1.0"
+version = "0.1.1"
 description = "自强Studio Django 工具"
 authors = ["Nagico <yjr888@vip.qq.com>"]
 license = "MIT"
 readme = "README.md"
+homepage = "https://github.com/Nagico/zq-django-util"
+documentation = "https://github.com/Nagico/zq-django-util/tree/master/docs"
+keywords = ["django", "drf", "util"]
 packages = [{include = "zq_django_util"}]
 
 [tool.poetry.dependencies]

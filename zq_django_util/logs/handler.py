@@ -230,8 +230,8 @@ class HandleLogAsync(Thread):
         exception_data: ApiException = response.exception_data
         data.update(
             dict(
-                exp_id=exception_data.eid,
-                event_id=exception_data.event_id,
+                exp_id=exception_data.eid or "",
+                event_id=exception_data.event_id or "",
                 exception_type=exception_data.exc_data["type"],
                 exception_msg=exception_data.exc_data["msg"],
                 exception_info=exception_data.exc_data["info"],

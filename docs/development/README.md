@@ -1,5 +1,7 @@
 # zq-django-util 开发文档
 
+本项目使用 Poetry 进行依赖管理，Pytest 进行单元测试
+
 ## 依赖安装
 
 推荐先使用 conda 创建新的虚拟环境，并进入其中

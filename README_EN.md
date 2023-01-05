@@ -53,10 +53,10 @@ poetry add zq-django-util
 
 ## Usage
 
-[Usage Docs (CN)](docs/usage)
+[Usage Docs (CN)](https://github.com/Nagico/zq-django-util/blob/master/docs/usage)
 
 ## Contribute
 
 We use Poetry and Pytest to build our project.
 
-[Development Docs (CN)](docs/development)
+[Development Docs (CN)](https://github.com/Nagico/zq-django-util/blob/master/docs/development)

@@ -39,8 +39,7 @@ class ApiExceptionHandler:
             zq_exception_settings.EXCEPTION_UNKNOWN_HANDLE
         ):  # 未知异常处理（非drf、api的异常）
             exc = self.convert_unhandled_exceptions(exc)  # 将未知异常转换为drf异常
-
-        exc = self.convert_drf_exceptions(exc)  # 将drf异常转换为api异常
+            exc = self.convert_drf_exceptions(exc)  # 将drf异常转换为api异常
         set_rollback()  # 设置事务回滚
         response = None
 

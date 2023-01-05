@@ -1,7 +1,7 @@
 <div align="center">
 
 # zq-django-util
-**自强 Studio Django 工具**
+**Django Tool Sets for Ziqiang Studio**
 
 <!-- markdownlint-disable-next-line MD036 -->
 </div>
@@ -19,46 +19,44 @@
 </p>
 <!-- markdownlint-enable MD033 -->
 
-## 简介
+## Overview
 
-zq-django-util 是用于辅助搭建 django-drf 应用的工具集合，其中包含：
+`zq-django-util` is a tool sets for build django-drf applications, which contains:
 
-- 标准异常、响应处理
-- jwt、微信认证
-- oss 存储与直传
-- 默认分页类
-- 测试 ViewSet
+- Standard exception and response handler
+- JWT and Wechat authentication
+- Aliyun OSS Storage and upload directly in client
+- Default pagination class
+- Test ViewSet
 
-## 依赖需求
+## Requirements
 
 - Python 3.8+
 - Django 3.2+
 - Django REST framework 3.12+
 
-**强烈建议**使用官方支持的最新版本，当前的测试环境为：Python 3.10, Django 4.1, DRF 3.14
+We **highly recommend** using the latest version. The test version we currently use is Python 3.10, Django 4.1, and DRF 3.14.
 
-## 安装
+## Installation
 
-- 安装 zq-django-util 包
+- Install `zq-django-util` package
 
-使用 `pip` 安装：
+Install using `pip`:
 ```shell
 pip install zq-django-util
 ```
 
-使用 `poetry` 安装：
+Install using `poetry`:
 ```shell
 poetry add zq-django-util
 ```
 
-## 使用
+## Usage
 
-可以根据以下说明进行配置，以启用相关功能。
+[Usage Docs (CN)](docs/usage)
 
-[使用文档](docs/usage)
+## Contribute
 
-## 开发
+We use Poetry and Pytest to build our project.
 
-本项目使用 Poetry 进行依赖管理，Pytest 进行单元测试。
-
-[开发文档](docs/development)
+[Development Docs (CN)](docs/development)

@@ -594,7 +594,7 @@ class ApiExceptionHandlerSentryTestCase(APITestCase):
                 {"email": "test", "id": 1, "phone": ""}
             )
 
-    @override_settings(ZQ_EXCEPTION={"SENTRY_ENABLE": True})
+    @override_settings(SENTRY_ENABLE=True)
     def test_run_with_sentry(self):
         mock_capture_exception = self.mock_sentry_sdk.api.capture_exception
         mock_capture_exception.return_value = "event_id"

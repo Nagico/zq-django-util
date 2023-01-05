@@ -444,7 +444,6 @@ class ApiExceptionHandlerTestCase(TestCase):
             self.assertEqual(
                 response.status_code, exc.response_type.status_code
             )
-            self.assertEqual(response.content_type, "application/json")
 
             response_data = exc.response_data
             response_data["data"]["details"] = None

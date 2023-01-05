@@ -125,7 +125,6 @@ class ApiExceptionHandler:
             data,
             status=exc.response_type.status_code,
             headers=headers,
-            content_type="application/json",
         )
 
     @staticmethod

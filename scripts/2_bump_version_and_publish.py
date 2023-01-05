@@ -95,8 +95,10 @@ def set_version():
 
     print("Success.")
 
+    return version
 
-def publish():
+
+def publish(version):
     """
     - reads version
     - reads changes from changelog
@@ -105,7 +107,6 @@ def publish():
     - publishes on pypi
     - creates github release
     """
-    from zq_django_util import __version__ as version
 
     if not ask_confirm(f"Publishing version {version}. Is this correct?"):
         return
@@ -172,5 +173,5 @@ def publish():
 
 
 if __name__ == "__main__":
-    set_version()
-    publish()
+    version = set_version()
+    publish(version)

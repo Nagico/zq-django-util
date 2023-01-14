@@ -85,10 +85,10 @@ class TokenVO:
 
 ### 全局配置
 
-在 `REST_FRAMWORK__DEFAULT_AUTHENTICATION_CLASSES` 中可以配置全局的认证处理类：
+在 `REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES` 中可以配置全局的认证处理类：
 
 ```python
-REST_FRAMWORK = {
+REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [  # 任何一个认证成功即可
         "zq_django_util.utils.auth.authentications.ActiveUserAuthentication",  # jwt: 激活用户认证方式
         "rest_framework.authentication.SessionAuthentication",  # session 认证，在 debug 中可以使用，用于 web 界面的登录

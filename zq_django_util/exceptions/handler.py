@@ -39,7 +39,7 @@ class ApiExceptionHandler:
             zq_exception_settings.EXCEPTION_UNKNOWN_HANDLE
         ):  # 未知异常处理（非drf、api的异常）
             exc = self.convert_unhandled_exceptions(exc)  # 将未知异常转换为drf异常
-            exc = self.convert_drf_exceptions(exc)  # 将drf异常转换为api异常
+        exc = self.convert_drf_exceptions(exc)  # 将drf异常转换为api异常
         set_rollback()  # 设置事务回滚
         response = None
 
@@ -170,7 +170,7 @@ class ApiExceptionHandler:
 
     @staticmethod
     def convert_drf_exceptions(
-        exc: Union[drf_exceptions.APIException, ApiException]
+        exc: Union[drf_exceptions.APIException, ApiException, Exception],
     ) -> ApiException:
         """
         转换drf异常
@@ -219,8 +219,12 @@ class ApiExceptionHandler:
             response_type = ResponseType.APIThrottled
             detail = f"请求频率过高，请{getattr(exc, 'args', None)[0]}s后再试"
             msg = f"请求太快了，请{getattr(exc, 'args', None)[0]}s后再试"
-        else:
+        elif isinstance(exc, drf_exceptions.APIException):
             record = True
+            response_type = ResponseType.ServerError
+        else:
+            # 不处理其他异常
+            return exc
 
         return ApiException(response_type, msg, exc, record, detail)
 

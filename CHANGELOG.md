@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.2 (2023-01-14)
+
+#### Fixes
+
+* (mkdocs): 删除include插件
+#### Docs
+
+* (mkdocs): 支持readthedocs
+* (mkdocs): 添加mkdocs构建支持
+
+Full set of changes: [`v0.1.1...v0.1.2`](https://github.com/Nagico/zq-django-util/compare/v0.1.1...v0.1.2)
+
 ## v0.1.1 (2023-01-05)
 
 #### New Features

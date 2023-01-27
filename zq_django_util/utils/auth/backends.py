@@ -22,7 +22,14 @@ class OpenIdBackend(BaseBackend):
 
     AuthUser = get_user_model()
 
-    openid_field = getattr(settings, "OPENID_FIELD", "openid")  # 获取 openid 字段名
+    openid_field: str = getattr(
+        settings, "OPENID_FIELD", "openid"
+    )  # 获取 openid 字段名
+
+    def __init__(self, auth_user_model=None):
+        super().__init__()
+        if auth_user_model:
+            self.AuthUser = auth_user_model
 
     def authenticate(
         self,

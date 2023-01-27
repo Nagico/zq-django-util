@@ -24,7 +24,8 @@ class OpenIdLoginSerializer(serializers.Serializer):
     OpenID Token 获取序列化器
     """
 
-    openid_field = getattr(settings, "OPENID_FIELD", "openid")
+    openid_field: str = getattr(settings, "OPENID_FIELD", "openid")
+    backend = OpenIdBackend()
 
     openid = PasswordField()
 
@@ -60,7 +61,7 @@ class OpenIdLoginSerializer(serializers.Serializer):
         except KeyError:
             pass
 
-        openid_backend = OpenIdBackend()  # 实例化 openid 验证模块
+        openid_backend = self.backend
 
         try:
             user: AuthUser = openid_backend.authenticate(

@@ -54,3 +54,11 @@ class OpenIdBackendTestCase(APITestCase):
 
     def test_get_user_not_exists(self):
         self.assertIsNone(self.backend.get_user(-1))
+
+    def test_custom_model(self):
+        openid = "openid"
+        user = baker.make(User, openid=openid)
+        backend = OpenIdBackend(auth_user_model=User)
+        request = self.factory.request()
+        auth_user = backend.authenticate(request, openid=openid)
+        self.assertEqual(auth_user, user)

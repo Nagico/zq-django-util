@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.3 (2023-01-27)
+
+#### New Features
+
+* (auth): 添加验证后端自定义模型
+
+Full set of changes: [`v0.1.2...v0.1.3`](https://github.com/Nagico/zq-django-util/compare/v0.1.2...v0.1.3)
+
 ## v0.1.2 (2023-01-14)
 
 #### Fixes

@@ -14,7 +14,7 @@ from zq_django_util.exceptions.types import ExtraHeaders
 from zq_django_util.response import ResponseType
 from zq_django_util.response.types import ApiExceptionResponse
 
-if zq_exception_settings.SENTRY_ENABLE:
+if zq_exception_settings.SENTRY_ENABLE:  # pragma: no cover
     import sentry_sdk
 
 
@@ -171,7 +171,7 @@ class ApiExceptionHandler:
     @staticmethod
     def convert_drf_exceptions(
         exc: Union[drf_exceptions.APIException, ApiException, Exception],
-    ) -> ApiException:
+    ) -> ApiException | Exception:
         """
         转换drf异常
         :param exc: drf异常

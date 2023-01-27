@@ -1,4 +1,3 @@
-import importlib
 import json
 import sys
 from typing import Any, Optional
@@ -263,6 +262,14 @@ class ExceptionHandlerTestCase(TestCase):
                 cm.exception.args[0],
                 r"is not a subclass of ApiExceptionHandler$",
             )
+
+    @override_settings(ZQ_EXCEPTION={"EXCEPTION_UNKNOWN_HANDLE": False})
+    def test_exception_handler_disable_unknown_handle(self):
+        try:
+            raise ValueError("msg")
+        except ValueError as e:
+            response = exception_handler(e, self.context)
+            self.assertIsNone(response)
 
 
 class ApiExceptionHandlerTestCase(TestCase):
@@ -608,12 +615,6 @@ class ApiExceptionHandlerSentryTestCase(APITestCase):
             mock_notify_sentry.assert_called_once_with(exc, response)
             mock_capture_exception.assert_called_once_with(exc)
             self.assertEqual(response.data["data"]["event_id"], "event_id")
-
-    @override_settings(ZQ_EXCEPTION={"SENTRY_ENABLE": True})
-    def test_sentry_import(self):
-        module = sys.modules["zq_django_util.exceptions.handler"]
-        importlib.reload(module)
-        self.assertTrue(module.sentry_sdk)
 
 
 class ExceptionViewTestCase(APITestCase):

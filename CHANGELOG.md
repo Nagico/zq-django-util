@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.4 (2023-02-01)
+
+#### Fixes
+
+* (exception): 添加jwt异常处理
+
+Full set of changes: [`v0.1.3...v0.1.4`](https://github.com/Nagico/zq-django-util/compare/v0.1.3...v0.1.4)
+
 ## v0.1.3 (2023-01-27)
 
 #### New Features

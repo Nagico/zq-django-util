@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, call, patch
 
 import django.core.exceptions as django_exceptions
 import rest_framework.exceptions as drf_exceptions
+import rest_framework_simplejwt.exceptions as jwt_exceptions
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.http import Http404
@@ -415,6 +416,27 @@ class ApiExceptionHandlerTestCase(TestCase):
         exc = ApiException(ResponseType.ServerError)
         api_exc = ApiExceptionHandler.convert_drf_exceptions(exc)
         self.assertIs(api_exc, exc)
+
+    def test_convert_jwt_exceptions_invalid_token(self):
+        exc = jwt_exceptions.InvalidToken()
+        drf_exc = ApiExceptionHandler.convert_known_exceptions(exc)
+        self.assertIsInstance(drf_exc, ApiException)
+        self.assertIs(drf_exc.inner, exc)
+        self.assertEqual(drf_exc.response_type, ResponseType.TokenInvalid)
+
+    def test_convert_jwt_exceptions_authentication_failed(self):
+        exc = jwt_exceptions.AuthenticationFailed()
+        drf_exc = ApiExceptionHandler.convert_known_exceptions(exc)
+        self.assertIsInstance(drf_exc, ApiException)
+        self.assertIs(drf_exc.inner, exc)
+        self.assertEqual(drf_exc.response_type, ResponseType.LoginFailed)
+
+    def test_convert_jwt_exceptions_token_error(self):
+        exc = jwt_exceptions.TokenError()
+        drf_exc = ApiExceptionHandler.convert_known_exceptions(exc)
+        self.assertIsInstance(drf_exc, ApiException)
+        self.assertIs(drf_exc.inner, exc)
+        self.assertEqual(drf_exc.response_type, ResponseType.TokenInvalid)
 
     def test_convert_known_exceptions_convert_http_404(self):
         exc = Http404()

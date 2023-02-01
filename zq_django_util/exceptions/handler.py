@@ -2,6 +2,7 @@ from typing import Optional, Union
 
 import django.core.exceptions as django_exceptions
 import rest_framework.exceptions as drf_exceptions
+import rest_framework_simplejwt.exceptions as jwt_exceptions
 from django.http import Http404
 from drf_standardized_errors.formatter import ExceptionFormatter
 from drf_standardized_errors.types import ExceptionHandlerContext
@@ -150,6 +151,23 @@ class ApiExceptionHandler:
             return drf_exceptions.NotFound()
         elif isinstance(exc, django_exceptions.PermissionDenied):
             return drf_exceptions.PermissionDenied()
+        # jwt
+        elif isinstance(exc, jwt_exceptions.InvalidToken):
+            return ApiException(
+                type=ResponseType.TokenInvalid,
+                inner=exc,
+            )
+        elif isinstance(exc, jwt_exceptions.AuthenticationFailed):
+            return ApiException(
+                type=ResponseType.LoginFailed,
+                inner=exc,
+            )
+        elif isinstance(exc, jwt_exceptions.TokenError):
+            return ApiException(
+                type=ResponseType.TokenInvalid,
+                detail="Token解析错误",
+                inner=exc,
+            )
         else:
             return exc
 

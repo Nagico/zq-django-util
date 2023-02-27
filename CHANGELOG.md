@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.5 (2023-02-27)
+
+#### Fixes
+
+* (log): 修复响应耗时记录错误
+
+Full set of changes: [`v0.1.4...v0.1.5`](https://github.com/Nagico/zq-django-util/compare/v0.1.4...v0.1.5)
+
 ## v0.1.4 (2023-02-01)
 
 #### Fixes

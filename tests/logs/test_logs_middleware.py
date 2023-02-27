@@ -40,7 +40,10 @@ class APILoggerMiddlewareTestCase(APITestCase):
         middleware.insert_log(request)
 
         mock_thread.put_log_data.assert_called_once_with(
-            request, "RESPONSE", mock_thread.put_log_data.call_args[0][2]
+            request,
+            "RESPONSE",
+            mock_thread.put_log_data.call_args[0][2],
+            mock_thread.put_log_data.call_args[0][3],
         )
 
     @patch("zq_django_util.logs.threads.LOGGER_THREAD")
@@ -56,7 +59,10 @@ class APILoggerMiddlewareTestCase(APITestCase):
         await middleware.insert_log_async(request)
 
         mock_thread.put_log_data.assert_called_once_with(
-            request, "RESPONSE", mock_thread.put_log_data.call_args[0][2]
+            request,
+            "RESPONSE",
+            mock_thread.put_log_data.call_args[0][2],
+            mock_thread.put_log_data.call_args[0][3],
         )
 
     @patch(

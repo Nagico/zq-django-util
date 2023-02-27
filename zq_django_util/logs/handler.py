@@ -37,7 +37,7 @@ class HandleLogAsync(Thread):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.flag = True
-        self._queue: Queue[(Request, Response, int)] = Queue(
+        self._queue: Queue[(Request, Response, float, float)] = Queue(
             maxsize=drf_logger_settings.QUEUE_MAX_SIZE
         )
 
@@ -70,12 +70,14 @@ class HandleLogAsync(Thread):
         request: Request,
         response: ApiExceptionResponse,
         start_time: float,
+        end_time: float | None,
     ) -> Optional[RequestLogDict]:
         """
         处理请求日志
         :param request:
         :param response:
         :param start_time:
+        :param end_time:
         :return:
         """
         # region 检查是否需要记录日志
@@ -109,7 +111,9 @@ class HandleLogAsync(Thread):
             return
 
         # endregion
-        data = self.get_request_log_data(request, response, start_time)  # 解析数据
+        data = self.get_request_log_data(
+            request, response, start_time, end_time
+        )  # 解析数据
 
         if drf_logger_settings.SIGNAL:  # 需要发送信号
             # TODO 使用django信号发送日志
@@ -119,16 +123,21 @@ class HandleLogAsync(Thread):
             return data  # 返回数据
 
     def put_log_data(
-        self, request: Request, response: Response, start_time: float
+        self,
+        request: Request,
+        response: Response,
+        start_time: float,
+        end_time: float | None = None,
     ) -> None:
         """
         将日志数据放入队列
         :param request:
         :param response:
         :param start_time:
+        :param end_time:
         :return:
         """
-        self._queue.put((request, response, start_time))
+        self._queue.put((request, response, start_time, end_time))
 
         if self._queue.qsize() >= drf_logger_settings.QUEUE_MAX_SIZE:
             # 队列已满，开始处理日志
@@ -153,18 +162,23 @@ class HandleLogAsync(Thread):
         exception_items: List[ExceptionLog] = []  # 异常日志
         while not self._queue.empty():
             try:
-                request, response, start_time = self._queue.get()
+                request: Request
+                response: Response | ApiExceptionResponse
+                start_time: float
+                end_time: float | None
+
+                request, response, start_time, end_time = self._queue.get()
 
                 # 存在异常信息，则为异常日志
                 if getattr(response, "exception_data", False):
                     res = self.prepare_exception_log(
-                        request, response, start_time
+                        request, response, start_time, end_time
                     )
                     if res:  # 解析后需要插入数据库
                         exception_items.append(ExceptionLog(**res))
                 else:  # 否则只记录请求日志
                     res = self.prepare_request_log(
-                        request, response, start_time
+                        request, response, start_time, end_time
                     )
                     if res:  # 解析后需要插入数据库
                         request_items.append(RequestLog(**res))
@@ -215,17 +229,22 @@ class HandleLogAsync(Thread):
 
     @classmethod
     def prepare_exception_log(
-        cls, request: Request, response: ApiExceptionResponse, start_time: float
+        cls,
+        request: Request,
+        response: ApiExceptionResponse,
+        start_time: float,
+        end_time: float | None,
     ) -> ExceptionLogDict:
         """
         解析异常记录
         :param request: 请求
         :param response: 响应
         :param start_time: 开始时间
+        :param end_time: 结束时间
         :return: 异常数据
         """
         data: RequestLogDict = cls.get_request_log_data(
-            request, response, start_time
+            request, response, start_time, end_time
         )  # 获取请求日志数据
         exception_data: ApiException = response.exception_data
         data.update(
@@ -242,13 +261,17 @@ class HandleLogAsync(Thread):
 
     @staticmethod
     def get_request_log_data(
-        request: Request, response: ApiExceptionResponse, start_time: float
+        request: Request,
+        response: ApiExceptionResponse,
+        start_time: float,
+        end_time: float | None,
     ) -> RequestLogDict:
         """
         解析请求记录
         :param request: 请求
         :param response: 响应
         :param start_time: 开始时间
+        :param end_time: 结束时间
         :return:
         """
         # region 获取用户
@@ -334,6 +357,8 @@ class HandleLogAsync(Thread):
             file_data=file_data,
             response=mask_sensitive_data(response_body),
             status_code=response.status_code,
-            execution_time=time.time() - start_time if start_time else None,
+            execution_time=end_time - start_time
+            if start_time and end_time
+            else None,
             create_time=timezone.now(),
         )

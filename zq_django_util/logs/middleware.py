@@ -26,13 +26,15 @@ class APILoggerMiddleware:
     def insert_log(self, request):
         start_time = time.time()
         response = self.get_response(request)
-        LOGGER_THREAD.put_log_data(request, response, start_time)
+        end_time = time.time()
+        LOGGER_THREAD.put_log_data(request, response, start_time, end_time)
 
         return response
 
     async def insert_log_async(self, request):
         start_time = time.time()
         response = await self.get_response(request)
-        LOGGER_THREAD.put_log_data(request, response, start_time)
+        end_time = time.time()
+        LOGGER_THREAD.put_log_data(request, response, start_time, end_time)
 
         return response

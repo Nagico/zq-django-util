@@ -68,7 +68,7 @@ class HandleLogAsyncTestCase(APITestCase):
             response.exception = True
             response.exception_data = exception
 
-        return request, response, time.time()
+        return request, response, time.time(), time.time()
 
     @override_settings(DRF_LOGGER={"QUEUE_MAX_SIZE": 5})
     def test_put_log_data(self):
@@ -152,7 +152,7 @@ class HandleLogAsyncTestCase(APITestCase):
         handler = HandleLogAsync()
         request = Request(APIRequestFactory().get("/admin/"))
         log_data = handler.prepare_request_log(
-            request, ApiExceptionResponse(), time.time()
+            request, ApiExceptionResponse(), time.time(), time.time()
         )
 
         self.assertIsNone(log_data)
@@ -169,7 +169,7 @@ class HandleLogAsyncTestCase(APITestCase):
         request = Request(APIRequestFactory().get("/__debug__/"))
 
         log_data = handler.prepare_request_log(
-            request, ApiExceptionResponse(), time.time()
+            request, ApiExceptionResponse(), time.time(), time.time()
         )
 
         self.assertIsNone(log_data)
@@ -187,7 +187,7 @@ class HandleLogAsyncTestCase(APITestCase):
         request = Request(APIRequestFactory().get("/test/"))
 
         log_data = handler.prepare_request_log(
-            request, ApiExceptionResponse(), time.time()
+            request, ApiExceptionResponse(), time.time(), time.time()
         )
 
         self.assertIsNone(log_data)
@@ -205,7 +205,7 @@ class HandleLogAsyncTestCase(APITestCase):
         request = Request(APIRequestFactory().get("/namespace/"))
 
         log_data = handler.prepare_request_log(
-            request, ApiExceptionResponse(), time.time()
+            request, ApiExceptionResponse(), time.time(), time.time()
         )
 
         self.assertIsNone(log_data)
@@ -223,7 +223,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 200
 
-        log_data = handler.prepare_request_log(request, response, time.time())
+        log_data = handler.prepare_request_log(
+            request, response, time.time(), time.time()
+        )
 
         self.assertIsNotNone(log_data)
 
@@ -241,7 +243,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 500
 
-        log_data = handler.prepare_request_log(request, response, time.time())
+        log_data = handler.prepare_request_log(
+            request, response, time.time(), time.time()
+        )
 
         self.assertIsNotNone(log_data)
 
@@ -259,7 +263,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 200
 
-        log_data = handler.prepare_request_log(request, response, time.time())
+        log_data = handler.prepare_request_log(
+            request, response, time.time(), time.time()
+        )
 
         self.assertIsNone(log_data)
 
@@ -276,7 +282,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 200
 
-        log_data = handler.prepare_request_log(request, response, time.time())
+        log_data = handler.prepare_request_log(
+            request, response, time.time(), time.time()
+        )
 
         self.assertIsNotNone(log_data)
 
@@ -294,7 +302,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 200
 
-        log_data = handler.prepare_request_log(request, response, time.time())
+        log_data = handler.prepare_request_log(
+            request, response, time.time(), time.time()
+        )
 
         self.assertIsNotNone(log_data)
 
@@ -312,7 +322,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 200
 
-        log_data = handler.prepare_request_log(request, response, time.time())
+        log_data = handler.prepare_request_log(
+            request, response, time.time(), time.time()
+        )
 
         self.assertIsNone(log_data)
 
@@ -407,7 +419,7 @@ class HandleLogAsyncTestCase(APITestCase):
             response.api_request_data.update(data.data)
 
             log_data = handler.get_request_log_data(
-                request, response, time.time()
+                request, response, time.time(), time.time()
             )
 
             self.assertEqual(log_data["content_type"], request.content_type)
@@ -443,7 +455,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response.headers["Content-Type"] = "application/json"
         response.content = b'{"test": "test"}'
 
-        log_data = handler.get_request_log_data(request, response, time.time())
+        log_data = handler.get_request_log_data(
+            request, response, time.time(), time.time()
+        )
 
         self.assertEqual(log_data["response"], {"test": "test"})
         self.assertEqual(log_data["status_code"], response.status_code)
@@ -469,7 +483,7 @@ class HandleLogAsyncTestCase(APITestCase):
         ) as mock:
             mock.return_value = '{"test": "test"}'
             log_data = handler.get_request_log_data(
-                request, response, time.time()
+                request, response, time.time(), time.time()
             )
 
             self.assertEqual(log_data["response"], {"test": "test"})
@@ -491,7 +505,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response.content = {"test": "test"}
         response.streaming = True
 
-        log_data = handler.get_request_log_data(request, response, time.time())
+        log_data = handler.get_request_log_data(
+            request, response, time.time(), time.time()
+        )
 
         self.assertEqual(log_data["response"], {"__content__": "streaming"})
 
@@ -510,7 +526,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response.headers["Content-Type"] = "application/gzip"
         response.content = b'{"test": "test"}'
 
-        log_data = handler.get_request_log_data(request, response, time.time())
+        log_data = handler.get_request_log_data(
+            request, response, time.time(), time.time()
+        )
 
         self.assertEqual(log_data["response"], {"__content__": "gzip file"})
 
@@ -529,7 +547,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response.headers["Content-Type"] = "application/json"
         response.content = b'{"test": }'
 
-        log_data = handler.get_request_log_data(request, response, time.time())
+        log_data = handler.get_request_log_data(
+            request, response, time.time(), time.time()
+        )
 
         self.assertEqual(log_data["response"], {"__content__": "parse error"})
 
@@ -543,7 +563,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 200
 
-        log_data = handler.get_request_log_data(request, response, time.time())
+        log_data = handler.get_request_log_data(
+            request, response, time.time(), time.time()
+        )
 
         self.assertEqual(log_data["url"], "http://testserver/test/?foo=bar")
 
@@ -557,7 +579,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 200
 
-        log_data = handler.get_request_log_data(request, response, time.time())
+        log_data = handler.get_request_log_data(
+            request, response, time.time(), time.time()
+        )
 
         self.assertEqual(log_data["url"], "/test/?foo=bar")
 
@@ -571,7 +595,9 @@ class HandleLogAsyncTestCase(APITestCase):
         response = ApiExceptionResponse()
         response.status_code = 200
 
-        log_data = handler.get_request_log_data(request, response, time.time())
+        log_data = handler.get_request_log_data(
+            request, response, time.time(), time.time()
+        )
 
         self.assertEqual(log_data["url"], "http://testserver/test/?foo=bar")
 

@@ -29,7 +29,7 @@ class AbstractUser(DjangoAbstractUser):
     # )
 
     avatar = models.ImageField(
-        upload_to="avatar", default="avatar/default.jpg", verbose_name="头像"
+        upload_to="avatar", default=r"avatar\default.jpg", verbose_name="头像"
     )
 
     phone = models.CharField(max_length=13, default="", verbose_name="手机")

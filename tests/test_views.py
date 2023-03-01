@@ -19,12 +19,7 @@ class APIRootViewSetTestCase(APITestCase):
     def test_anonymous(self):
         data = self.client.get("").data
         res = dict(
-            user=dict(
-                id=None,
-                username=None,
-                is_active=None,
-                is_superuser=None,
-            ),
+            user=None,
             time=data["time"],
         )
         self.assertDictEqual(data, res)

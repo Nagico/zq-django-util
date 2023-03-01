@@ -19,24 +19,27 @@ class APIRootViewSet(ListModelMixin, GenericViewSet):
         if user.is_anonymous:
             return Response(
                 dict(
-                    user=dict(
-                        id=None,
-                        username=None,
-                        is_active=None,
-                        is_superuser=None,
-                    ),
+                    user=None,
                     time=time,
                 )
             )
         else:
             return Response(
                 dict(
-                    user=dict(
-                        id=user.id,
-                        username=user.username,
-                        is_active=user.is_active,
-                        is_superuser=user.is_superuser,
-                    ),
+                    user=self.handle_user_info(user),
                     time=time,
                 )
             )
+
+    def handle_user_info(self, user) -> dict:
+        """
+        处理用户信息
+        :param user: 用户对象
+        :return: 返回用户信息
+        """
+        return dict(
+            id=user.id,
+            username=user.username,
+            is_active=user.is_active,
+            is_superuser=user.is_superuser,
+        )

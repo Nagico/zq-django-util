@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict
 
 import rest_framework_simplejwt.settings
@@ -14,7 +15,6 @@ from zq_django_util.exceptions import ApiException
 from zq_django_util.response import ResponseType
 from zq_django_util.utils.auth.backends import OpenIdBackend
 from zq_django_util.utils.auth.exceptions import OpenIdNotBound
-from zq_django_util.utils.auth.types import TokenVO
 
 AuthUser = get_user_model()
 
@@ -44,7 +44,7 @@ class OpenIdLoginSerializer(serializers.Serializer):
         # 调用 simple-jwt 中 token 生成方法, 需要在 settings 中指定 USER_ID_FIELD 为主键名
         return RefreshToken.for_user(user)
 
-    def validate(self, attrs: Dict[str, Any]) -> TokenVO:
+    def validate(self, attrs: Dict[str, Any]) -> dict:
         """
         重写验证器
 
@@ -74,20 +74,46 @@ class OpenIdLoginSerializer(serializers.Serializer):
         user_id_field = (
             rest_framework_simplejwt.settings.api_settings.USER_ID_FIELD
         )  # 读取 settings 中定义的 user 主键字段名
-        data: TokenVO = {}  # 待返回数据
         refresh = self.get_token(user)  # 获取 token
-        data["id"] = getattr(user, user_id_field)  # 返回用户id
-        data["access"] = str(refresh.access_token)  # 返回 access token
-        data["refresh"] = str(refresh)  # 返回 refresh token
-        data["username"] = user.username  # 返回用户名
 
-        return data
+        return self.generate_token_result(
+            user,
+            user_id_field,
+            refresh.access_token.lifetime,
+            str(refresh.access_token),
+            str(refresh),
+        )
 
     def get_open_id(self, attrs: Dict[str, Any]) -> str:
         """
         获取 openid
         """
         return attrs[self.openid_field]
+
+    def generate_token_result(
+        self,
+        user: AuthUser,
+        user_id_field: str,
+        expire_time: datetime,
+        access: str,
+        refresh: str,
+    ) -> dict:
+        """
+        生成 token 返回结果
+        :param user: 用户对象
+        :param user_id_field: 用户主键字段
+        :param expire_time: 过期时间
+        :param access: access token
+        :param refresh: refresh token
+        :return:
+        """
+        return dict(
+            id=getattr(user, user_id_field),
+            username=user.username,
+            expire_time=expire_time,
+            access=access,
+            refresh=refresh,
+        )
 
     def handle_new_openid(self, openid: str) -> AuthUser:
         """
@@ -121,11 +147,44 @@ class AbstractWechatLoginSerializer(OpenIdLoginSerializer):
 
 
 class PasswordLoginSerializer(TokenObtainPairSerializer):
-    def validate(self, attrs: Dict[str, Any]) -> TokenVO:
-        data: TokenVO = super().validate(attrs)
+    def validate(self, attrs: Dict[str, Any]) -> dict:
+        super(TokenObtainPairSerializer, self).validate(attrs)  # 获取 self.user
+
         user_id_field = (
             rest_framework_simplejwt.settings.api_settings.USER_ID_FIELD
         )  # 读取 settings 中定义的 user 主键字段名
-        data["id"] = getattr(self.user, user_id_field)  # 返回用户id
-        data["username"] = self.user.username  # 返回用户名
-        return data
+
+        refresh = self.get_token(self.user)
+
+        return self.generate_token_result(
+            self.user,
+            user_id_field,
+            refresh.access_token.lifetime,
+            str(refresh.access_token),
+            str(refresh),
+        )
+
+    def generate_token_result(
+        self,
+        user: AuthUser,
+        user_id_field: str,
+        expire_time: datetime,
+        access: str,
+        refresh: str,
+    ) -> dict:
+        """
+        生成 token 返回结果
+        :param user: 用户对象
+        :param user_id_field: 用户主键字段
+        :param expire_time: 过期时间
+        :param access: access token
+        :param refresh: refresh token
+        :return:
+        """
+        return dict(
+            id=getattr(user, user_id_field),
+            username=user.username,
+            expire_time=expire_time,
+            access=access,
+            refresh=refresh,
+        )

@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.1.6 (2023-03-01)
+
+#### New Features
+
+* (auth): 认证序列化器支持自定义返回内容
+* 测试视图支持自定义用户数据返回
+* (oss): 支持object acl
+* 添加django example project
+* (user): 支持oss自动文件清除
+#### Fixes
+
+* (log): 更新log字段
+#### Others
+
+* bump version to v0.1.5
+
+Full set of changes: [`v0.1.5...v0.1.6`](https://github.com/Nagico/zq-django-util/compare/v0.1.5...v0.1.6)
+
 ## v0.1.5 (2023-02-27)
 
 #### Fixes

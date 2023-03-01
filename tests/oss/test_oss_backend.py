@@ -357,6 +357,18 @@ class OssStorageTestCase(APITestCase):
             "base/dir/"
         )
 
+    def test_get_object_acl(self):
+        self.storage.get_object_acl("file")
+        self.mock_bucket.return_value.get_object_acl.assert_called_once_with(
+            "base/file"
+        )
+
+    def test_set_object_acl(self):
+        self.storage.set_object_acl("file", "public-read")
+        self.mock_bucket.return_value.put_object_acl.assert_called_once_with(
+            "base/file", "public-read"
+        )
+
 
 class OssOtherStorageTestCase(APITestCase):
     access_key_id = "access_key_id"

@@ -218,7 +218,7 @@ class OssStorage(Storage):
         logger.debug("files: %s", files)
         return dirs, files
 
-    def url(self, name) -> str:
+    def url(self, name: str) -> str:
         """
         获取文件的url(带token)
         :param name: 文件名
@@ -255,6 +255,25 @@ class OssStorage(Storage):
             name += "/"
         logger.debug("delete name: %s", name)
         self.bucket.delete_object(name)
+
+    def get_object_acl(self, name: str) -> str:
+        """
+        获取文件的访问权限
+        :param name: 文件名
+        :return:
+        """
+        name = self._get_key_name(name)
+        return self.bucket.get_object_acl(name).acl
+
+    def set_object_acl(self, name: str, acl: str) -> None:
+        """
+        设置文件的访问权限
+        :param name: 文件名
+        :param acl: 访问权限
+        :return:
+        """
+        name = self._get_key_name(name)
+        self.bucket.put_object_acl(name, acl)
 
 
 class OssMediaStorage(OssStorage):

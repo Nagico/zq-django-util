@@ -7,11 +7,11 @@ class RequestLog(models.Model):
     """
 
     user = models.IntegerField(null=True, blank=True, verbose_name="用户ID")
-    ip = models.CharField(max_length=32, verbose_name="用户IP")
-    method = models.CharField(max_length=32, verbose_name="请求方法")
+    ip = models.CharField(max_length=16, verbose_name="用户IP")
+    method = models.CharField(max_length=8, verbose_name="请求方法")
     url = models.TextField(verbose_name="请求URL")
     headers = models.JSONField(verbose_name="请求头")
-    content_type = models.CharField(max_length=32, verbose_name="请求类型")
+    content_type = models.CharField(max_length=34, verbose_name="请求类型")
     query_param = models.JSONField(verbose_name="请求参数")
     request_body = models.JSONField(verbose_name="请求数据")
     file_data = models.JSONField(verbose_name="文件数据")
@@ -22,7 +22,7 @@ class RequestLog(models.Model):
         db_index=True, verbose_name="响应状态码"
     )
     execution_time = models.DecimalField(
-        null=True, decimal_places=5, max_digits=8, verbose_name="执行时间"
+        null=True, decimal_places=8, max_digits=10, verbose_name="执行时间"
     )
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="请求时间")
 

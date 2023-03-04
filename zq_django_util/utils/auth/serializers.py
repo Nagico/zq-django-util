@@ -79,7 +79,7 @@ class OpenIdLoginSerializer(serializers.Serializer):
         return self.generate_token_result(
             user,
             user_id_field,
-            refresh.access_token.lifetime,
+            refresh.access_token.current_time + refresh.access_token.lifetime,
             str(refresh.access_token),
             str(refresh),
         )
@@ -159,7 +159,7 @@ class PasswordLoginSerializer(TokenObtainPairSerializer):
         return self.generate_token_result(
             self.user,
             user_id_field,
-            refresh.access_token.lifetime,
+            refresh.access_token.current_time + refresh.access_token.lifetime,
             str(refresh.access_token),
             str(refresh),
         )

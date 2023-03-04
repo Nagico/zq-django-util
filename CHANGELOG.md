@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.7 (2023-03-04)
+
+#### Fixes
+
+* (auth): 修复token过期时间返回
+
+Full set of changes: [`v0.1.6...v0.1.7`](https://github.com/Nagico/zq-django-util/compare/v0.1.6...v0.1.7)
+
 ## v0.1.6 (2023-03-01)
 
 #### New Features

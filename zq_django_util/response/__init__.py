@@ -52,6 +52,7 @@ class ResponseType(ResponseTypeEnum):
     PhoneNotExist = ("A0214", "手机号不存在", 400)
     LoginExpired = ("A0220", "用户登录已过期", 401)
     TokenInvalid = ("A0221", "token 无效或已过期", 401)
+    RefreshTokenInvalid = ("A0221", "refresh token 无效或已过期", 401)
     ThirdLoginFailed = ("A0230", "用户第三方登录失败", 401)
     ThirdLoginCaptchaError = ("A0232", "用户第三方登录验证码错误", 401)
     ThirdLoginExpired = ("A0233", "用户第三方登录已过期", 401)

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.8 (2023-03-06)
+
+#### New Features
+
+* 添加RefreshTokenInvalid异常类型
+
+Full set of changes: [`v0.1.7...v0.1.8`](https://github.com/Nagico/zq-django-util/compare/v0.1.7...v0.1.8)
+
 ## v0.1.7 (2023-03-04)
 
 #### Fixes

@@ -34,7 +34,6 @@ class OpenIdBackend(BaseBackend):
     def authenticate(
         self,
         request: Optional[Request] = None,
-        openid: Optional[str] = None,
         raise_exception: bool = False,
         **kwargs: Any,
     ) -> Optional[AuthUser]:
@@ -45,12 +44,13 @@ class OpenIdBackend(BaseBackend):
 
         :param request: 传入请求
 
-        :param openid: 传入openid
 
         :param kwargs: 字典参数
 
         :return: openid 对应用户对象
         """
+        openid = kwargs.get(self.openid_field, None)
+
         try:
             # 未传入openid 认证失败
             if openid is None:

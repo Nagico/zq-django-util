@@ -54,7 +54,9 @@ class OpenIdLoginSerializer(serializers.Serializer):
         """
         openid = self.get_open_id(attrs)
         # 验证 openid
-        authenticate_kwargs = {"openid": openid}  # 给 openid 验证模块准备 openid
+        authenticate_kwargs = {
+            self.openid_field: openid
+        }  # 给 openid 验证模块准备 openid
         try:
             #  给 openid 验证模块准备请求数据
             authenticate_kwargs["request"] = self.context["request"]

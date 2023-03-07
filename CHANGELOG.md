@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.9 (2023-03-07)
+
+#### New Features
+
+* (auth): 支持openid自定义字段验证
+
+Full set of changes: [`v0.1.8...v0.1.9`](https://github.com/Nagico/zq-django-util/compare/v0.1.8...v0.1.9)
+
 ## v0.1.8 (2023-03-06)
 
 #### New Features

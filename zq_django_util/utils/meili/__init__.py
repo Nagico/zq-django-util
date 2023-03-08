@@ -17,7 +17,9 @@ if MEILI_URL:
     try:
         from loguru import logger
 
-        logger.success(f"MeiliSearch client connected to {MEILI_URL}")
+        logger.success(
+            f"MeiliSearch client connected to {MEILI_URL}"
+        )  # pragma: no cover
     except ImportError:
         import logging
 

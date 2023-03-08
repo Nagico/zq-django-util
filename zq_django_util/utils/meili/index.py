@@ -1,22 +1,43 @@
 from typing import Any, Type
 
+import meilisearch.index
 from django.db.models import Model, QuerySet
-from django.db.models.signals import post_delete, post_save
 from meilisearch import Client
-from meilisearch.index import Index as MeiliIndex
 from rest_framework.request import Request
 from rest_framework.serializers import BaseSerializer
 
-from zq_django_util.utils.meili import meili_client
 from zq_django_util.utils.meili.response import SearchResult
 
 PK = int | str
 
 
-class BaseIndex(MeiliIndex):
+class BaseIndex(meilisearch.index.Index):
+    """
+    Index class for MeiliSearch
+
+    index是多个具有同类型document的集合，每个document都有一个唯一的标识符，称为主键。
+    该类用于以类字段的形式定义index的设置，以及对index的增删改查操作。
+
+    :var index_uid: index的唯一标识符 (str)
+    :var primary_key: 主键 (str | None, 默认为 None, 即自动识别主键)
+    :var client: MeiliSearch client (Client | None, 默认为None, 即使用 meili_client 单例)
+    :var class_settings: 是否使用类属性作为index的设置 (bool, 默认为 True)
+
+    :var displayed_attributes: 要显示的字段 (list[str], 默认为 ["*"], 即全部字段)
+    :var searchable_attributes: 要搜索的字段 (list[str], 默认为 ["*"], 即全部字段)
+    :var filterable_attributes: 要对值进行筛选的字段 (list[str], 默认为 [])
+    :var sortable_attributes: 要排序的字段 (list[str], 默认为 [])
+    :var ranking_rules: 排序规则 (list[str], 默认为 ["typo", "words", "proximity", "attribute", "sort", "exactness"])
+    :var stop_words: 停用词 (list[str], 默认为 [])
+    :var synonyms: 同义词 (dict[str, list[str]], 默认为 {})
+    :var distinct_attribute: 去重字段 (str | None, 默认为 None)
+    :var max_values_per_facet: 每个facet的最大值 (int, 默认为 100)
+    :var max_total_hits: 搜索结果数目的最大值, 用于分页 (int, 默认为 1000)
+    """
+
     index_uid: str
     primary_key: str | None = None
-    client: Client = meili_client
+    client: Client | None = None
 
     class_settings: bool = True
 
@@ -52,7 +73,11 @@ class BaseIndex(MeiliIndex):
         assert (
             self.index_uid is not None and self.index_uid != ""
         ), "index_uid is required"
-        assert self.client is not None, "client is required"
+
+        if self.client is None:
+            import zq_django_util.utils.meili
+
+            self.client = zq_django_util.utils.meili.meili_client
 
         super().__init__(
             self.client.config, uid=self.index_uid, primary_key=self.primary_key
@@ -134,6 +159,17 @@ class BaseIndex(MeiliIndex):
 
 
 class BaseIndexHelper:
+    """
+    Index辅助类
+
+    配合BaseIndex使用，结合drf的序列化器操作index内的document
+
+    :var queryset: QuerySet
+    :var serializer_class: 序列化器
+    :var index_class: Index类
+
+    """
+
     queryset: QuerySet
     serializer_class: Type[BaseSerializer]
     index_class: Type[BaseIndex]
@@ -141,12 +177,45 @@ class BaseIndexHelper:
     class Meta:
         abstract = True
 
-    def __init__(self):
+    def __init__(self, auto_update=True):
+        """
+
+        :param auto_update: 根据model信号自动更新索引，默认为True
+        """
         self.model = self.queryset.model
         self.index = self.index_class()
 
-        post_save.connect(self.model_save_receiver, sender=self.model)
-        post_delete.connect(self.model_delete_receiver, sender=self.model)
+        if auto_update:
+            from django.db.models.signals import post_delete, post_save
+
+            post_save.connect(self.model_save_receiver, sender=self.model)
+            post_delete.connect(self.model_delete_receiver, sender=self.model)
+
+    def _to_queryset(
+        self,
+        objs: Model | PK | list[Model | PK] | QuerySet,
+        ignore_default_query_set: bool = False,
+    ) -> QuerySet | None:
+        """
+        将对象、id、id列表、对象列表、QuerySet转换为QuerySet
+        """
+        if not isinstance(objs, list) and not isinstance(objs, QuerySet):
+            # 将单个对象转换为列表
+            objs = [objs]
+
+        if isinstance(objs, QuerySet) and not ignore_default_query_set:
+            # 限制QuerySet
+            objs = objs & self.queryset
+
+        if len(objs) > 0 and isinstance(objs[0], PK):
+            if ignore_default_query_set:
+                objs = self.model.objects.filter(pk__in=objs)
+            else:
+                objs = self.queryset.filter(pk__in=objs)
+
+        if len(objs) == 0:
+            return None
+        return objs
 
     def upsert_index(
         self,
@@ -162,21 +231,8 @@ class BaseIndexHelper:
         :param ignore_default_query_set: 忽略默认的query_set限制，默认为False
         :return:
         """
-        if not isinstance(objs, list):
-            # 将单个对象转换为列表
-            objs = [objs]
-
-        if isinstance(objs, QuerySet) and not ignore_default_query_set:
-            # 限制QuerySet
-            objs = objs & self.queryset
-
-        if len(objs) > 0 and isinstance(objs[0], PK):
-            if ignore_default_query_set:
-                objs = self.model.objects.filter(pk__in=objs)
-            else:
-                objs = self.queryset.filter(pk__in=objs)
-
-        if len(objs) == 0:
+        objs = self._to_queryset(objs, ignore_default_query_set)
+        if objs is None:
             return
 
         serializer = self.serializer_class(objs, many=True)
@@ -185,7 +241,7 @@ class BaseIndexHelper:
 
     def delete_index(
         self,
-        ids: Model | PK | list[Model | PK] | QuerySet,
+        objs: Model | PK | list[Model | PK] | QuerySet,
         ignore_default_query_set: bool = True,
     ):
         """
@@ -193,26 +249,15 @@ class BaseIndexHelper:
 
         https://docs.meilisearch.com/reference/api/documents.html#delete-documents-by-batch
 
-        :param ids: 对象
+        :param objs: id、对象、id列表、对象列表、QuerySet
         :param ignore_default_query_set: 忽略默认的query_set限制，默认为True
         :return:
         """
-        if not isinstance(ids, list) and not isinstance(ids, QuerySet):
-            # 将单个对象转换为列表
-            ids = [ids]
-
-        if isinstance(ids, QuerySet) and not ignore_default_query_set:
-            # 限制QuerySet
-            ids = ids & self.queryset
-
-        if len(ids) > 0 and not isinstance(ids[0], PK):
-            # 将对象列表转换为id列表
-            ids = [i.pk for i in ids]
-
-        if len(ids) == 0:
+        objs = self._to_queryset(objs, ignore_default_query_set)
+        if objs is None:
             return
 
-        self.index.delete_documents(ids)
+        self.index.delete_documents([obj.pk for obj in objs])
 
     def rebuild_index(self):
         """

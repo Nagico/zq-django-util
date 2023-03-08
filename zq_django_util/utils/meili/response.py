@@ -14,7 +14,7 @@ class SearchItem:
 class SearchResult:
     object_list: list[SearchItem]
     page: int
-    his_per_page: int
+    hits_per_page: int
     total_pages: int
     count: int
     facets: dict[str, dict[str, int]]

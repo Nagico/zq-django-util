@@ -83,7 +83,7 @@ class AsyncTask:
     def is_finished(self) -> bool:
         return self.is_succeeded or self.is_failed or self.is_canceled
 
-    def wait(self, timeout: int = 5) -> "AsyncTask":
+    def wait(self, timeout: float = 5.0) -> "AsyncTask":
         """
         等待任务完成
 

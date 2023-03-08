@@ -7,6 +7,10 @@ from rest_framework.test import APITestCase
 from zq_django_util.utils import meili
 from zq_django_util.utils.meili.constant.task import TaskStatus, TaskType
 from zq_django_util.utils.meili.error import Error
+from zq_django_util.utils.meili.exceptions import (
+    MeiliSearchTaskFail,
+    MeiliSearchTaskTimeoutError,
+)
 
 
 class MeiliTestCase(APITestCase):
@@ -131,7 +135,7 @@ class MeiliUtilTestCase(APITestCase):
             self.assertEqual(hit.updated_at, "test")
             break
 
-    def test_task(self):
+    def create_async_task(self, status: str):
         from zq_django_util.utils.meili.task import AsyncTask
 
         patcher_meili_task = patch("meilisearch.models.task.Task")
@@ -139,7 +143,7 @@ class MeiliUtilTestCase(APITestCase):
 
         mock_meili_task.return_value.uid = "uid"
         mock_meili_task.return_value.index_uid = "index_uid"
-        mock_meili_task.return_value.status = "enqueued"
+        mock_meili_task.return_value.status = status
         mock_meili_task.return_value.type = "documentAdditionOrUpdate"
         mock_meili_task.return_value.details = {}
         mock_meili_task.return_value.error = {
@@ -156,7 +160,10 @@ class MeiliUtilTestCase(APITestCase):
 
         meili_task = mock_meili_task()
 
-        task = AsyncTask(meili_task)
+        return AsyncTask(meili_task)
+
+    def test_task(self):
+        task = self.create_async_task("enqueued")
 
         self.assertEqual(task.uid, "uid")
         self.assertEqual(task.index_uid, "index_uid")
@@ -179,4 +186,27 @@ class MeiliUtilTestCase(APITestCase):
         self.assertFalse(task.is_failed)
         self.assertFalse(task.is_canceled)
         self.assertFalse(task.is_finished)
+        self.assertTrue(task.is_enqueued)
+
+    def test_task_wait__success(self):
+        task = self.create_async_task("succeeded")
+
+        task.wait()
+
+        self.assertTrue(task.is_succeeded)
+
+    def test_task_wait__fail(self):
+        task = self.create_async_task("failed")
+
+        with self.assertRaises(MeiliSearchTaskFail):
+            task.wait()
+
+        self.assertTrue(task.is_failed)
+
+    def test_task_wait__timeout(self):
+        task = self.create_async_task("enqueued")
+
+        with self.assertRaises(MeiliSearchTaskTimeoutError):
+            task.wait(timeout=0.1)
+
         self.assertTrue(task.is_enqueued)

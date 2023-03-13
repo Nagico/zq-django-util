@@ -31,6 +31,12 @@ class ExceptionLogAdmin(admin.ModelAdmin):
     list_filter = ["exception_type", "method", "url", "user"]
     ordering = ["-id"]
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
 
 class ExportCsvMixin:
     def export_as_csv(self, request, queryset):
@@ -109,7 +115,6 @@ class SlowAPIsFilter(admin.SimpleListFilter):
 
 @admin.register(models.RequestLog)
 class RequestLogAdmin(admin.ModelAdmin, ExportCsvMixin):
-
     actions = ["export_as_csv"]
 
     def __init__(self, model, admin_site):
@@ -131,10 +136,10 @@ class RequestLogAdmin(admin.ModelAdmin, ExportCsvMixin):
     added_on_time.short_description = "Create at"
 
     list_per_page = 20
-    list_display = ["method", "url", "ip", "user", "create_time"]
+    list_display = ["method", "url", "status_code", "ip", "user", "create_time"]
     list_display_links = ["method", "url"]
     search_fields = ["ip", "url", "user"]
-    list_filter = ["method", "url", "user"]
+    list_filter = ["method", "url", "status_code", "user"]
     ordering = ["-id"]
 
     change_list_template = "charts_change_list.html"

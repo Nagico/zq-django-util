@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.10 (2023-03-13)
+
+#### New Features
+
+* (log): 优化 admin 界面
+#### Fixes
+
+* (log): 修复数据库定时插入失败
+
+Full set of changes: [`v0.1.9...v0.1.10`](https://github.com/Nagico/zq-django-util/compare/v0.1.9...v0.1.10)
+
 ## v0.1.9 (2023-03-07)
 
 #### New Features

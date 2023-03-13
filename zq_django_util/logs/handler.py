@@ -24,6 +24,7 @@ from zq_django_util.logs.types import (
     RequestLogDict,
 )
 from zq_django_util.logs.utils import (
+    close_old_database_connections,
     get_client_ip,
     get_headers,
     mask_sensitive_data,
@@ -189,6 +190,7 @@ class HandleLogAsync(Thread):
             self._insert_into_database(request_items, exception_items)
 
     @staticmethod
+    @close_old_database_connections
     def _insert_into_database(
         request_items: List[RequestLog],
         exception_items: List[ExceptionLog],

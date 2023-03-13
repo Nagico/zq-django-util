@@ -1,6 +1,7 @@
 import re
 from typing import Dict
 
+from django.db import close_old_connections
 from rest_framework.request import Request
 
 from zq_django_util.logs.configs import drf_logger_settings
@@ -61,3 +62,18 @@ def mask_sensitive_data(data: JSONVal) -> JSONVal:
             data[key] = [mask_sensitive_data(item) for item in data[key]]
 
     return data
+
+
+def close_old_database_connections(func):
+    """
+    自定义decorator，用来装饰使用数据库操作函数
+
+    https://stackoverflow.com/questions/59773675/why-am-i-getting-the-mysql-server-has-gone-away-exception-in-django
+    """
+
+    def wrapper(*args, **kwargs):
+        close_old_connections()
+
+        return func(*args, **kwargs)
+
+    return wrapper

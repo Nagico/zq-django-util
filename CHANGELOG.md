@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.0 (2023-04-04)
+
+#### New Features
+
+* (meili): 支持meili search
+
+Full set of changes: [`v0.1.10...v0.2.0`](https://github.com/Nagico/zq-django-util/compare/v0.1.10...v0.2.0)
+
 ## v0.1.10 (2023-03-13)
 
 #### New Features

@@ -95,7 +95,7 @@ jobs:
 
       - name: Add Django ${{ matrix.django-version }} and DRF ${{ matrix.drf-version }}
         if: steps.cached-lockfile.outputs.cache-hit != 'true'
-        run: poetry add --lock --group test django~${{ matrix.django-version }} djangorestframework~${{ matrix.drf-version }}
+        run: poetry add --lock --group test django~${{ matrix.django-version }} djangorestframework~${{ matrix.drf-version }} meilisearch
 
       - name: Load cached lockfile
         id: cached-poetry-dependencies

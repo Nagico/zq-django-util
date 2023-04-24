@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zq-django-util"
-version = "0.2.0"
+version = "0.2.1"
 description = "自强Studio Django 工具"
 authors = ["Nagico <yjr888@vip.qq.com>"]
 license = "MIT"

@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.1 (2023-04-24)
+
+#### New Features
+
+* 测试环境添加meilisearch
+
+Full set of changes: [`v0.2.0...v0.2.1`](https://github.com/Nagico/zq-django-util/compare/v0.2.0...v0.2.1)
+
 ## v0.2.0 (2023-04-04)
 
 #### New Features

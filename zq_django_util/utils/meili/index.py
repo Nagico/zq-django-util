@@ -237,7 +237,7 @@ class BaseIndexHelper:
 
         serializer = self.serializer_class(objs, many=True)
         data = serializer.data
-        self.index.add_documents(data)
+        self.index.add_documents(data, primary_key=self.index.primary_key)
 
     def delete_index(
         self,
@@ -257,7 +257,9 @@ class BaseIndexHelper:
         if objs is None:
             return
 
-        self.index.delete_documents([obj.pk for obj in objs])
+        self.index.delete_documents(
+            [obj.pk for obj in objs], primary_key=self.index.primary_key
+        )
 
     def rebuild_index(self):
         """
@@ -273,7 +275,8 @@ class BaseIndexHelper:
             self.serializer_class(
                 self.queryset,
                 many=True,
-            ).data
+            ).data,
+            primary_key=self.index.primary_key,
         )
 
     def search(

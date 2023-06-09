@@ -257,9 +257,7 @@ class BaseIndexHelper:
         if objs is None:
             return
 
-        self.index.delete_documents(
-            [obj.pk for obj in objs], primary_key=self.index.primary_key
-        )
+        self.index.delete_documents([obj.pk for obj in objs])
 
     def rebuild_index(self):
         """

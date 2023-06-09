@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.2 (2023-06-09)
+
+#### Fixes
+
+* (meili): 修复meili删除索引时pk冗余字段
+
+Full set of changes: [`v0.2.1...v0.2.2`](https://github.com/Nagico/zq-django-util/compare/v0.2.1...v0.2.2)
+
 ## v0.2.1 (2023-04-24)
 
 #### New Features
